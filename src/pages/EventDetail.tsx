@@ -176,7 +176,7 @@ const EventDetail = () => {
           items.push({
             title: ticket.description,
             quantity,
-            unit_price: ticket.price,
+            unit_price: (ticket.price * 1.1),
             currency_id: 'ARS'
           })
         }
