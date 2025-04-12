@@ -25,6 +25,7 @@ export default function Success() {
             console.error('No session found')
             return
           }
+        const { access_token } = session.data.session
         if(total == '0' && email_url !== ''){
           const emailResponseFree = await fetch(
             'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
@@ -50,7 +51,7 @@ export default function Success() {
             return;
           }
         }
-        const { access_token } = session.data.session
+
         const response = await fetch('https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/smart-api', {
           method: 'POST',
           headers: {
