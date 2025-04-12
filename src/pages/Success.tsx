@@ -17,6 +17,7 @@ export default function Success() {
         const status = searchParams.get('status')
         const preference_id = searchParams.get('preference_id')
         const external_reference = searchParams.get('external_reference')
+        const [userId, email] = (external_reference ?? '').split('___');
       
         const session = await supabase.auth.getSession()
         if (!session?.data?.session) {
@@ -25,7 +26,6 @@ export default function Success() {
           }
             
         const { access_token } = session.data.session
-
         const response = await fetch('https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/smart-api', {
           method: 'POST',
           headers: {
@@ -45,6 +45,30 @@ export default function Success() {
         })
       
         const result = await response.json()
+
+          const emailResponse = await fetch(
+            'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${access_token}`,
+              },
+              body: JSON.stringify({
+                email: email,
+                user_id: id,
+                ticketTypeId: ticket_type_id
+              }),
+            }
+          );      
+      
+          if (!emailResponse.ok) {
+            console.error('Error enviando el correo de confirmación')
+          } else {
+            console.log('Correo de confirmación enviado')
+          }
+        
       
         if (!response.ok) {
           console.error(result.error || 'Error al activar ticket')

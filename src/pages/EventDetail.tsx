@@ -208,30 +208,7 @@ const EventDetail = () => {
       if (!response.ok) throw new Error('No se pudo obtener el enlace de pago.')
   
       const data = await response.json()
-      if(data.init_point !== 'https://jammcmmnty.com/perfil'){
-        const emailResponse = await fetch(
-          'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${session?.access_token}`,
-            },
-            body: JSON.stringify({
-              email: user.email,
-              user_id: user.id,
-              ticketTypeId: selectedTicketTypeId
-            }),
-          }
-        );      
-    
-        if (!emailResponse.ok) {
-          console.error('Error enviando el correo de confirmación')
-        } else {
-          console.log('Correo de confirmación enviado')
-        }
-      }
+
 
       window.location.href = data.init_point
   
