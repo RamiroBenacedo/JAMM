@@ -171,7 +171,7 @@ const EventDetail = () => {
             return;
           }
           if (error) throw error
-          const subtotal = ticket.price * quantity
+          const subtotal = (ticket.price * 1.1) * quantity
           totalAmount += subtotal
           items.push({
             title: ticket.description,
@@ -199,7 +199,9 @@ const EventDetail = () => {
             items,
             ticketTypeId: selectedTicketTypeId,
             event_id: event?.id,
-            userId: user.id
+            userId: user.id,
+            marketplace: '4561360244072920',
+            marketplace_fee: marketplace_fee
           }),
         }
       )
