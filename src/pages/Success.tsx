@@ -26,7 +26,10 @@ export default function Success() {
             return
           }
         const { access_token } = session.data.session
-        if(total == '0' && email_url !== ''){
+        console.log(total);
+        console.log(email_url);
+        console.log(ticket_type_id);
+        if((total == '0' || total == 0) && email_url !== ''){
           const emailResponseFree = await fetch(
             'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
             {
