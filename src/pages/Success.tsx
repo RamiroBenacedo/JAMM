@@ -18,7 +18,6 @@ export default function Success() {
         const status = searchParams.get('status')
         const preference_id = searchParams.get('preference_id')
         const external_reference = searchParams.get('external_reference')
-        const [userId, email] = (external_reference ?? '').split('___');
       
         const session = await supabase.auth.getSession()
         if (!session?.data?.session) {
@@ -40,7 +39,7 @@ export default function Success() {
                 'Authorization': `Bearer ${access_token}`,
               },
               body: JSON.stringify({
-                email: email,
+                email: email_url,
                 user_id: id,
                 ticketTypeId: ticket_type_id
               }),
