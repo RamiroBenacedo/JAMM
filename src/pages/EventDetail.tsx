@@ -200,7 +200,6 @@ const EventDetail = () => {
             ticketTypeId: selectedTicketTypeId,
             event_id: event?.id,
             userId: user.id,
-            marketplace: '4561360244072920',
             marketplace_fee: marketplace_fee
           }),
         }
