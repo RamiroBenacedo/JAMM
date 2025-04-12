@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gradient-green: linear-gradient(135deg, #56ae4a 0%, #68c95b 100%);
+}
+
+body {
+  @apply bg-[#2a2a2a] text-white;
+}
+
+.gradient-text {
+  background: var(--gradient-green);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.feature-card {
+  @apply bg-[#111111] rounded-2xl p-6 transition-all duration-300;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-card:hover {
+  border-color: rgba(86, 174, 74, 0.5);
+  box-shadow: 0 0 20px rgba(86, 174, 74, 0.2);
+}
+
+.feature-icon {
+  @apply w-12 h-12 mb-4 text-[#56ae4a];
+}
+
+.nav-link {
+  @apply text-gray-300 hover:text-white transition-colors duration-200;
+}
+
+.primary-button {
+  @apply px-6 py-3 rounded-xl font-medium transition-all duration-200;
+  background: var(--gradient-green);
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(86, 174, 74, 0.4);
+}
+
+.secondary-button {
+  @apply px-6 py-3 rounded-xl font-medium border border-gray-700 text-gray-300 hover:text-white transition-all duration-200;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.secondary-button:hover {
+  @apply border-[#56ae4a];
+  transform: translateY(-2px);
+}
