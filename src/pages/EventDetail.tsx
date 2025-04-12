@@ -209,7 +209,7 @@ const EventDetail = () => {
       if (!response.ok) throw new Error('No se pudo obtener el enlace de pago.')
   
       const data = await response.json()
-      if(data.init_point){
+      if(data.init_point !== 'https://jammcmmnty.com/perfil'){
         const emailResponse = await fetch(
           'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
           {
