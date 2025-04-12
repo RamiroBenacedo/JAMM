@@ -163,7 +163,7 @@ const EventDetail = () => {
             p_ticket_type_id: ticket.id,
             p_user_id: user.id,
             p_quantity: quantity,
-            p_total_price: ticket.price * quantity,
+            p_total_price: (ticket.price * 1.1) * quantity,
           })
           selectedTicketTypeId = ticket.id;
           if (!selectedTicketTypeId) {
