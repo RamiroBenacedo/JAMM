@@ -8,7 +8,8 @@ export default function Success() {
 
   useEffect(() => {
     const activateTicket = async () => {
-      
+        const total = searchParams.get('total')
+        const email_url = searchParams.get('email')
         const id = searchParams.get('user_id')
         const ticket_type_id = searchParams.get('ticket_type_id')
         const collection_id = searchParams.get('collection_id')
@@ -24,7 +25,31 @@ export default function Success() {
             console.error('No session found')
             return
           }
-            
+        if(total == '0' && email_url !== ''){
+          const emailResponseFree = await fetch(
+            'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${access_token}`,
+              },
+              body: JSON.stringify({
+                email: email,
+                user_id: id,
+                ticketTypeId: ticket_type_id
+              }),
+            }
+          ); 
+          if (!emailResponseFree.ok) {
+            console.error('Error enviando el correo de confirmación')
+          } else {
+            console.log('Correo de confirmación enviado')
+            navigate('/perfil')
+            return;
+          }
+        }
         const { access_token } = session.data.session
         const response = await fetch('https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/smart-api', {
           method: 'POST',
