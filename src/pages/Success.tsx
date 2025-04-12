@@ -18,7 +18,7 @@ export default function Success() {
         const status = searchParams.get('status')
         const preference_id = searchParams.get('preference_id')
         const external_reference = searchParams.get('external_reference')
-      
+        const [, email] = (external_reference ?? '').split('___');
         const session = await supabase.auth.getSession()
         if (!session?.data?.session) {
             console.error('No session found')
