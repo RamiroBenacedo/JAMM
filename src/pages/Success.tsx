@@ -25,6 +25,7 @@ export default function Success() {
             return
           }
         const { access_token } = session.data.session
+        console.log(id);
         console.log(total);
         console.log(email_url);
         console.log(ticket_type_id);
