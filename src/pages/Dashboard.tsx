@@ -94,7 +94,8 @@ const Dashboard = () => {
               purchased_tickets (
                 quantity,
                 total_price,
-                purchase_date
+                purchase_date,
+                payment_status
               )
             )
           `)
@@ -104,19 +105,27 @@ const Dashboard = () => {
 
         // Calculate stats for each event
         const stats: EventStats[] = events.map(event => {
-          const ticketsSold = event.ticket_types.reduce((total, type) => 
+          const filteredTicketTypes = event.ticket_types.map(type => {
+            const validPurchases = type.purchased_tickets.filter(p => p.payment_status === 1);
+            return {
+              ...type,
+              purchased_tickets: validPurchases
+            };
+          });
+    
+          const ticketsSold = filteredTicketTypes.reduce((total, type) =>
             total + type.purchased_tickets.reduce((sum, purchase) => sum + purchase.quantity, 0), 0);
-          
-          const totalSales = event.ticket_types.reduce((total, type) => 
+    
+          const totalSales = filteredTicketTypes.reduce((total, type) =>
             total + type.purchased_tickets.reduce((sum, purchase) => sum + purchase.total_price, 0), 0);
-          
-          const ticketsAvailable = event.ticket_types.reduce((total, type) => {
+    
+          const ticketsAvailable = filteredTicketTypes.reduce((total, type) => {
             if (type.type !== 'Cortesía') {
               return total + type.quantity;
             }
             return total;
           }, 0);
-
+    
           return {
             id: event.id,
             name: event.name,
@@ -124,12 +133,12 @@ const Dashboard = () => {
             ticketsSold,
             ticketsAvailable,
             max_tickets_per_user: event.max_tickets_per_user,
-            ticket_types: event.ticket_types.map(({ purchased_tickets, ...ticket }) => ticket)
+            ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket)
           };
         });
-
+    
         setEventStats(stats);
-
+    
         // Calculate total stats
         const totals = stats.reduce((acc, event) => ({
           totalSales: acc.totalSales + event.totalSales,
@@ -142,30 +151,32 @@ const Dashboard = () => {
           totalTicketsAvailable: 0,
           totalEvents: 0
         });
-
+    
         setTotalStats(totals);
-
+    
         // Prepare purchase data
-        const purchases = events.flatMap(event => 
-          event.ticket_types.flatMap(type => 
-            type.purchased_tickets.map(purchase => ({
-              date: purchase.purchase_date,
-              sales: purchase.total_price,
-              tickets: purchase.quantity
-            }))
+        const purchases = events.flatMap(event =>
+          event.ticket_types.flatMap(type =>
+            type.purchased_tickets
+              .filter(purchase => purchase.payment_status === 1)
+              .map(purchase => ({
+                date: purchase.purchase_date,
+                sales: purchase.total_price,
+                tickets: purchase.quantity
+              }))
           )
         );
-
+    
         setPurchaseData(purchases);
         updateChartData(purchases, timeframe);
-
+    
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError('Error al cargar los datos del dashboard');
       } finally {
         setLoading(false);
       }
-    };
+    };    
 
     fetchData();
   }, [user, navigate, timeframe]);
