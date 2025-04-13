@@ -83,7 +83,7 @@ const Footer = () => {
               </li>
               <li className="text-gray-600 flex items-center">
                 <span className="mr-2">📞</span>
-                ¿Necesitás ayuda con algo? +54 11 2550-6290
+                ¿Necesitás ayuda con algo?<br/>
               </li>
             </ul>
           </div>
