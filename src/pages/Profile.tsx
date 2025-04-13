@@ -141,6 +141,7 @@ const Profile = () => {
             )
           `)
           .eq('creator_id', user.id)
+          .eq('active', true)
           .order('date', { ascending: true });
 
         if (eventsError) throw eventsError;
@@ -186,7 +187,6 @@ const Profile = () => {
   
       if (error) throw error;
   
-      // Actualizamos el estado local eliminando el evento de la lista visible
       setEvents(events.filter(event => event.id !== eventToDelete));
       setShowDeleteModal(false);
       setEventToDelete(null);
