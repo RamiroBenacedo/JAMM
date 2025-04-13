@@ -27,6 +27,7 @@ function Events() {
         const { data, error } = await supabase
           .from('events')
           .select('*')
+          .eq('active', true)
           .order('date', { ascending: true });
 
         if (error) throw error;
