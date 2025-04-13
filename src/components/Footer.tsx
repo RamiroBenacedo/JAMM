@@ -84,6 +84,7 @@ const Footer = () => {
               <li className="text-gray-600 flex items-center">
                 <span className="mr-2">📞</span>
                 ¿Necesitás ayuda con algo?<br/>
+                +54 11 2550-6290
               </li>
             </ul>
           </div>
