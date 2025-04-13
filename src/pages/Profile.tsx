@@ -178,36 +178,20 @@ const Profile = () => {
     try {
       setDeleting(true);
   
-      const { data: ticketTypes, error: ttError } = await supabase
-        .from('ticket_types')
-        .select('id')
-        .eq('event_id', eventToDelete);
-  
-      if (ttError) throw ttError;
-      const ticketTypeIds = ticketTypes.map(tt => tt.id);
-  
-      await supabase
-        .from('purchased_tickets')
-        .update({ ticket_type_id: null })
-        .in('ticket_type_id', ticketTypeIds);
-  
-      await supabase
-        .from('ticket_types')
-        .delete()
-        .in('id', ticketTypeIds);
-
+      // En lugar de eliminar, marcamos el evento como inactivo
       const { error } = await supabase
         .from('events')
-        .delete()
+        .update({ active: false })
         .eq('id', eventToDelete);
   
       if (error) throw error;
   
+      // Actualizamos el estado local eliminando el evento de la lista visible
       setEvents(events.filter(event => event.id !== eventToDelete));
       setShowDeleteModal(false);
       setEventToDelete(null);
     } catch (err) {
-      console.error('Error deleting event:', err);
+      console.error('Error marcando evento como inactivo:', err);
       setError('Error al eliminar el evento. Por favor, intenta de nuevo más tarde.');
     } finally {
       setDeleting(false);
