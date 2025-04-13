@@ -174,35 +174,19 @@ const Profile = () => {
 
   const confirmDelete = async () => {
     if (!eventToDelete) return;
-  
+
     try {
       setDeleting(true);
-  
-      const { data: ticketTypes, error: ttError } = await supabase
-        .from('ticket_types')
-        .select('id')
-        .eq('event_id', eventToDelete);
-  
-      if (ttError) throw ttError;
-      const ticketTypeIds = ticketTypes.map(tt => tt.id);
-  
-      await supabase
-        .from('purchased_tickets')
-        .update({ ticket_type_id: null })
-        .in('ticket_type_id', ticketTypeIds);
-  
-      await supabase
-        .from('ticket_types')
-        .delete()
-        .in('id', ticketTypeIds);
-
+      
+      // Delete the event (this will cascade delete related records due to foreign key constraints)
       const { error } = await supabase
         .from('events')
         .delete()
         .eq('id', eventToDelete);
-  
+
       if (error) throw error;
-  
+
+      // Update local state to remove the deleted event
       setEvents(events.filter(event => event.id !== eventToDelete));
       setShowDeleteModal(false);
       setEventToDelete(null);
@@ -213,7 +197,6 @@ const Profile = () => {
       setDeleting(false);
     }
   };
-  
 
   if (loading) {
     return (
