@@ -305,7 +305,7 @@ const EventDetail = () => {
   }
 
   const total = calculateTotal();
-  console.log(event.marketplace_fee);
+
   // Filter tickets based on user role
   const visibleTickets = ticketTypes.filter(ticket => {
     if (ticket.type === 'Cortesía') {
