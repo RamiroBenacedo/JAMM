@@ -174,7 +174,7 @@ const EventDetail = () => {
             p_ticket_type_id: ticket.id,
             p_user_id: user.id,
             p_quantity: quantity,
-            p_total_price: parseFloat((ticket.price * 1.1).toFixed(2)) * quantity,
+            p_total_price: parseFloat((ticket.price * (1 + (event?.marketplace_fee ?? 0) / 100)).toFixed(2)) * quantity,
           })
           selectedTicketTypeId = ticket.id;
           if (!selectedTicketTypeId) {
@@ -182,12 +182,12 @@ const EventDetail = () => {
             return;
           }
           if (error) throw error
-          const subtotal = parseFloat((ticket.price * 1.1).toFixed(2)) * quantity
+          const subtotal = parseFloat((ticket.price * (1 + (event?.marketplace_fee ?? 0) / 100)).toFixed(2)) * quantity;
           totalAmount += subtotal
           items.push({
             title: ticket.description,
             quantity,
-            unit_price: parseFloat((ticket.price * 1.1).toFixed(2)),
+            unit_price: parseFloat((ticket.price * (1 + (event?.marketplace_fee ?? 0) / 100)).toFixed(2)),
             currency_id: 'ARS'
           })
         }
