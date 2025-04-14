@@ -192,8 +192,7 @@ const EventDetail = () => {
           })
         }
       }
-
-      const marketplace_fee = Math.round(totalAmount * 0.10)
+      const marketplace_fee = event?.marketplace_fee != null ? Math.round(totalAmount * (event.marketplace_fee / 100)) : 0;
   
       const { data: { session } } = await supabase.auth.getSession()
   
