@@ -29,6 +29,7 @@ interface TicketType {
   quantity: number;
   payment_id: number;
   payment_status: number;
+  active: boolean;
 }
 
 interface TicketQuantity {
@@ -308,6 +309,9 @@ const EventDetail = () => {
 
   // Filter tickets based on user role
   const visibleTickets = ticketTypes.filter(ticket => {
+    if(ticket.active === false){
+      return false;
+    }
     if (ticket.type === 'Cortesía') {
       return isCreator; // Only show courtesy tickets to event creator
     }
