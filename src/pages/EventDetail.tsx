@@ -17,6 +17,7 @@ interface Event {
   max_tickets_per_user: number;
   creator_id: string;
   id_vendedor: number;
+  marketplace_fee: number;
   image_url: string;
 }
 
@@ -305,7 +306,7 @@ const EventDetail = () => {
   }
 
   const total = calculateTotal();
-
+  console.log(event.marketplace_fee);
   // Filter tickets based on user role
   const visibleTickets = ticketTypes.filter(ticket => {
     if (ticket.type === 'Cortesía') {
