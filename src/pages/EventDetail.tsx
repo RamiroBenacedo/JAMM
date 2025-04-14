@@ -519,7 +519,7 @@ const EventDetail = () => {
                               {purchasing ? 'Procesando...' : 'Comprar entradas'}
                             </button>
                             <p className="text-[#56ae4a] text-sm mt-2 text-right max-w-[200px]">
-                              El valor del ticket posee 10% extra de costo de servicio
+                              El valor del ticket tendrá {event?.marketplace_fee != null ? event.marketplace_fee : 0}% extra de costo de servicio
                             </p>
                           </div>
                         </div>
