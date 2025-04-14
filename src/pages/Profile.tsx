@@ -266,6 +266,8 @@ const Profile = () => {
                   {purchasedTickets.length === 0 ? (
                     <div className="col-span-full bg-[#111111] p-6 text-center rounded-lg border border-gray-700">
                       <p className="text-gray-400">No has comprado entradas todavía.</p>
+                      <p className="text-gray-400">Si todavía no aparecen tus entradas, por favor esperá unos minutos mientras se confirma tu compra.</p>
+                      <p className="text-gray-400">Te notificaremos por correo cuando estén disponibles.</p>
                     </div>
                   ) : (
                     purchasedTickets

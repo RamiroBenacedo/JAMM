@@ -22,6 +22,7 @@ export default function Success() {
         const session = await supabase.auth.getSession()
         if (!session?.data?.session) {
             console.error('No session found')
+            navigate('/perfil');
             return
           }
         const { access_token } = session.data.session
@@ -48,6 +49,7 @@ export default function Success() {
           ); 
           if (!emailResponseFree.ok) {
             console.error('Error enviando el correo de confirmación')
+            navigate('/perfil')
           } else {
             console.log('Correo de confirmación enviado')
             navigate('/perfil')
@@ -94,6 +96,7 @@ export default function Success() {
       
           if (!emailResponse.ok) {
             console.error('Error enviando el correo de confirmación')
+            navigate('/perfil')
           } else {
             console.log('Correo de confirmación enviado')
           }
@@ -101,6 +104,7 @@ export default function Success() {
       
         if (!response.ok) {
           console.error(result.error || 'Error al activar ticket')
+          navigate('/perfil')
         } else {
           navigate('/perfil')
         }
