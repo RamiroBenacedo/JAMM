@@ -312,7 +312,7 @@ const EventDetail = () => {
     if(ticket.active === false){
       return false;
     }
-    if (ticket.type === 'Cortesía') {
+    if (ticket.type === 'Cortesía' || ticket.type === 'Cortesía VIP') {
       return isCreator; // Only show courtesy tickets to event creator
     }
     return true; // Show all other tickets to everyone
