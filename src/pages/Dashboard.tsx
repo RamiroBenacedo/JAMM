@@ -13,6 +13,7 @@ interface TicketType {
   description: string;
   price: number;
   quantity: number;
+  active: boolean;
 }
 
 interface Event {
@@ -61,7 +62,8 @@ const Dashboard = () => {
     type: '',
     description: '',
     price: 0,
-    quantity: 0
+    quantity: 0,
+    active: true
   });
   const [totalStats, setTotalStats] = useState({
     totalSales: 0,
@@ -91,6 +93,7 @@ const Dashboard = () => {
               description,
               price,
               quantity,
+              active,
               purchased_tickets (
                 quantity,
                 total_price,
@@ -310,6 +313,7 @@ const Dashboard = () => {
             description,
             price,
             quantity,
+            active,
             purchased_tickets (
               quantity,
               total_price,
@@ -403,7 +407,8 @@ const Dashboard = () => {
         type: '',
         description: '',
         price: 0,
-        quantity: 0
+        quantity: 0,
+        active: true
       });
       setShowNewTicketForm(false);
 
@@ -420,30 +425,31 @@ const Dashboard = () => {
       setSaving(true);
       setError(null);
 
-      // Delete the ticket type
-      const { error: deleteError } = await supabase
+      const { error: updateError } = await supabase
         .from('ticket_types')
-        .delete()
+        .update({ active: false })
         .eq('id', ticketId);
+  
+      if (updateError) throw updateError;
 
-      if (deleteError) throw deleteError;
-
-      // Update local state to remove the deleted ticket
       setEventStats(prevStats => 
         prevStats.map(event => ({
           ...event,
-          ticket_types: event.ticket_types.filter(ticket => ticket.id !== ticketId),
-          ticketsAvailable: event.ticketsAvailable - (event.ticket_types.find(t => t.id === ticketId)?.quantity || 0)
+          ticket_types: event.ticket_types.map(ticket => 
+            ticket.id === ticketId ? { ...ticket, active: false } : ticket
+          ),
+          ticketsAvailable: event.ticket_types.reduce((total, type) => 
+            total + (type.active ? type.quantity : 0), 0)
         }))
       );
-
+  
       // Show success message
-      setError('Ticket eliminado exitosamente');
+      setError('Ticket marcado como inactivo exitosamente');
       setTimeout(() => setError(null), 3000);
-
+  
     } catch (err) {
-      console.error('Error deleting ticket:', err);
-      setError('Error al eliminar el ticket. Por favor, intenta de nuevo.');
+      console.error('Error updating ticket active status:', err);
+      setError('Error al actualizar el estado del ticket. Por favor, intenta de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -750,7 +756,7 @@ const Dashboard = () => {
                             )}
                             
                             <div className="grid gap-4">
-                              {event.ticket_types.map((ticket) => (
+                              {event.ticket_types.filter(ticket => ticket.active === false).map((ticket) => (
                                 <div key={ticket.id} className="bg-[#1f1f1f] p-4 rounded-lg border border-gray-700">
                                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                     <div>
