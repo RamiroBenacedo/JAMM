@@ -514,6 +514,10 @@ const Dashboard = () => {
             <p className="mt-2 text-3xl font-bold text-white">{totalStats.totalTicketsAvailable}</p>
           </div>
           <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
+            <h3 className="text-gray-400 text-sm font-medium">Tickets Gratuitos</h3>
+            <p className="mt-2 text-3xl font-bold text-white">{totalStats.totalFreeTickets}</p>
+          </div>
+          <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
             <h3 className="text-gray-400 text-sm font-medium">Total Eventos</h3>
             <p className="mt-2 text-3xl font-bold text-white">{totalStats.totalEvents}</p>
           </div>
