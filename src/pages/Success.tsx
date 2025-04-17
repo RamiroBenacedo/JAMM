@@ -8,7 +8,7 @@ export default function Success() {
 
   useEffect(() => {
     const activateTicket = async () => {
-        const total = searchParams.get('total')
+        /*const total = searchParams.get('total')
         const email_url = searchParams.get('email')
         const id = searchParams.get('user_id')
         const ticket_type_id = searchParams.get('ticket_type_id')
@@ -25,12 +25,12 @@ export default function Success() {
             navigate('/perfil');
             return
           }
-        const { access_token } = session.data.session
-        console.log(id);
+        const { access_token } = session.data.session*/
+        /*console.log(id);
         console.log(total);
         console.log(email_url);
-        console.log(ticket_type_id);
-        if((total == '0' || total == 0) && email_url !== ''){
+        console.log(ticket_type_id);*/
+        /*if((total == '0' || total == 0) && email_url !== ''){
           const emailResponseFree = await fetch(
             'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/send-confirmation-email',
             {
@@ -55,9 +55,9 @@ export default function Success() {
             navigate('/perfil')
             return;
           }
-        }
+        }*/
 
-        const response = await fetch('https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/smart-api', {
+       /* const response = await fetch('https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/smart-api', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -92,22 +92,24 @@ export default function Success() {
                 ticketTypeId: ticket_type_id
               }),
             }
-          );      
+          );      */
       
-          if (!emailResponse.ok) {
+          /*if (!emailResponse.ok) {
             console.error('Error enviando el correo de confirmación')
             navigate('/perfil')
           } else {
             console.log('Correo de confirmación enviado')
-          }
+          }*/
         
       
-        if (!response.ok) {
-          console.error(result.error || 'Error al activar ticket')
+        //if (!response.ok) {
+          //console.error(result.error || 'Error al activar ticket')
+          //navigate('/perfil')
+        //} else {
+        setTimeout(() => {
           navigate('/perfil')
-        } else {
-          navigate('/perfil')
-        }
+        }, 5000);
+        //}
       }
       
 
