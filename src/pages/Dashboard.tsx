@@ -30,6 +30,7 @@ interface EventStats {
   ticketsSold: number;
   ticketsAvailable: number;
   max_tickets_per_user: number;
+  totalFreeTickets: number;
   ticket_types: TicketType[];
 }
 
@@ -69,7 +70,8 @@ const Dashboard = () => {
     totalSales: 0,
     totalTicketsSold: 0,
     totalTicketsAvailable: 0,
-    totalEvents: 0
+    totalEvents: 0,
+    totalFreeTickets: 0
   });
 
   useEffect(() => {
@@ -129,7 +131,14 @@ const Dashboard = () => {
             }
             return total;
           }, 0);
-    
+
+          const freeTickets = event.ticket_types.reduce((sum, type) => {
+            if (!type.purchased_tickets) return sum;
+            return sum + type.purchased_tickets
+              .filter(p => p.payment_status === 1 && p.payment_id === null && p.total_price === 0)
+              .reduce((subtotal, p) => subtotal + p.quantity, 0);
+          }, 0);
+
           return {
             id: event.id,
             name: event.name,
@@ -137,7 +146,8 @@ const Dashboard = () => {
             ticketsSold,
             ticketsAvailable,
             max_tickets_per_user: event.max_tickets_per_user,
-            ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket)
+            ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket),
+            totalFreeTickets: freeTickets
           };
         });
     
@@ -148,12 +158,14 @@ const Dashboard = () => {
           totalSales: acc.totalSales + event.totalSales,
           totalTicketsSold: acc.totalTicketsSold + event.ticketsSold,
           totalTicketsAvailable: acc.totalTicketsAvailable + event.ticketsAvailable,
-          totalEvents: acc.totalEvents + 1
+          totalEvents: acc.totalEvents + 1,
+          totalFreeTickets: acc.totalFreeTickets + event.totalFreeTickets
         }), {
           totalSales: 0,
           totalTicketsSold: 0,
           totalTicketsAvailable: 0,
-          totalEvents: 0
+          totalEvents: 0,
+          totalFreeTickets: 0
         });
     
         setTotalStats(totals);
@@ -318,7 +330,9 @@ const Dashboard = () => {
             purchased_tickets (
               quantity,
               total_price,
-              purchase_date
+              purchase_date,
+              payment_id,
+              payment_status
             )
           )
         `)
@@ -341,6 +355,13 @@ const Dashboard = () => {
           return total;
         }, 0);
 
+        const freeTickets = event.ticket_types.reduce((sum, type) => {
+          if (!type.purchased_tickets) return sum;
+          return sum + type.purchased_tickets
+            .filter(p => p.payment_status === 1 && p.payment_id === null && p.total_price === 0)
+            .reduce((subtotal, p) => subtotal + p.quantity, 0);
+        }, 0);
+
         return {
           id: event.id,
           name: event.name,
@@ -348,7 +369,8 @@ const Dashboard = () => {
           ticketsSold,
           ticketsAvailable,
           max_tickets_per_user: event.max_tickets_per_user,
-          ticket_types: event.ticket_types.map(({ purchased_tickets, ...ticket }) => ticket)
+          ticket_types: event.ticket_types.map(({ purchased_tickets, ...ticket }) => ticket),
+          totalFreeTickets: freeTickets
         };
       });
 
