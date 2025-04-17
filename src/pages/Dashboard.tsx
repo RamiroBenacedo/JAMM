@@ -98,7 +98,8 @@ const Dashboard = () => {
                 quantity,
                 total_price,
                 purchase_date,
-                payment_status
+                payment_status,
+                payment_id
               )
             )
           `)
@@ -109,7 +110,7 @@ const Dashboard = () => {
         // Calculate stats for each event
         const stats: EventStats[] = events.map(event => {
           const filteredTicketTypes = event.ticket_types.map(type => {
-            const validPurchases = type.purchased_tickets.filter(p => p.payment_status === 1);
+            const validPurchases = type.purchased_tickets.filter(p => p.payment_status === 1).filter(p => p.payment_id != null);
             return {
               ...type,
               purchased_tickets: validPurchases
