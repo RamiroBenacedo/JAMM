@@ -756,7 +756,7 @@ const Dashboard = () => {
                             )}
                             
                             <div className="grid gap-4">
-                              {event.ticket_types.filter(ticket => ticket.active === false).map((ticket) => (
+                              {event.ticket_types.filter(ticket => ticket.active === true).map((ticket) => (
                                 <div key={ticket.id} className="bg-[#1f1f1f] p-4 rounded-lg border border-gray-700">
                                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                     <div>
