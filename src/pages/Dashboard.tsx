@@ -120,7 +120,7 @@ const Dashboard = () => {
               purchased_tickets: validPurchases
             };
           });
-    
+          console.log(filteredTicketTypes);
           const ticketsSold = filteredTicketTypes.reduce((total, type) =>
             total + type.purchased_tickets.reduce((sum, purchase) => sum + purchase.quantity, 0), 0);
     
