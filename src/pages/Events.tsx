@@ -24,20 +24,17 @@ function Events() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        const now = new Date().toISOString();
         const { data, error } = await supabase
           .from('events')
           .select('*')
           .eq('active', true)
+          .gt('sales_end_date', now)
           .order('date', { ascending: true });
 
         if (error) throw error;
-        const now = new Date();
 
-        const filteredEvents = data.filter(event => {
-          const eventDateTime = new Date(`${event.date}T${event.time}`);
-          return eventDateTime >= now;
-        });
-        setEvents(filteredEvents || []);
+        setEvents(data || []);
       } catch (err) {
         console.error('Error fetching events:', err);
         setError('No se pudieron cargar los eventos. Por favor, intenta de nuevo más tarde.');
