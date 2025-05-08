@@ -35,8 +35,7 @@ function Events() {
 
         const filteredEvents = data.filter(event => {
           const eventDateTime = new Date(`${event.date}T${event.time}`);
-          console.log('Comparando:', eventDateTime.toISOString(), '<=', now.toISOString());
-          return eventDateTime <= now;
+          return eventDateTime >= now;
         });
         setEvents(filteredEvents || []);
       } catch (err) {
