@@ -58,6 +58,7 @@ const Dashboard = () => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [editingTickets, setEditingTickets] = useState<{ [key: string]: TicketType }>({});
   const [saving, setSaving] = useState(false);
+  const [rrppSales, setRrppSales] = useState({});
   const [showNewTicketForm, setShowNewTicketForm] = useState(false);
   const [newTicket, setNewTicket] = useState<Omit<TicketType, 'id'>>({
     type: '',
@@ -636,37 +637,14 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
-        {/* Sección RRPP */}
-        <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6">RRPP - Relaciones Públicas</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Ejemplo de datos RRPP */}
-            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-gray-700">
-              <h3 className="text-gray-400 text-sm font-medium">Nombre RRPP</h3>
-              <p className="mt-2 text-xl font-bold text-white">Juan Pérez</p>
-              <p className="mt-2 text-sm text-gray-300">Responsable de ventas y eventos</p>
-            </div>
-
-            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-gray-700">
-              <h3 className="text-gray-400 text-sm font-medium">Correo</h3>
-              <p className="mt-2 text-xl font-bold text-white">juan@empresa.com</p>
-            </div>
-
-            <div className="bg-[#2a2a2a] rounded-lg p-6 border border-gray-700">
-              <h3 className="text-gray-400 text-sm font-medium">Teléfono</h3>
-              <p className="mt-2 text-xl font-bold text-white">(555) 123-4567</p>
-            </div>
-          </div>
-
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setShowNewRRPPForm(true)}
-              className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
-            >
-              Añadir RRPP
-            </button>
-          </div>
+        {/*RRPP SALES*/}
+        <div>
+        {Object.keys(rrppSales).map((rrppName) => (
+          <p key={rrppName}>
+            {rrppName}: {rrppSales[rrppName as keyof typeof rrppSales]} tickets vendidos
+          </p>
+        ))}
+        </div>
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
