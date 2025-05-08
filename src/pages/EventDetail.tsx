@@ -194,7 +194,8 @@ const EventDetail = () => {
         }
       }
       const marketplace_fee = event?.marketplace_fee != null ? Math.round(totalAmount * (event.marketplace_fee / 100)) : 0;
-  
+      const queryParams = new URLSearchParams(window.location.search);
+      const rrpp        = queryParams.get('rrpp');
       const { data: { session } } = await supabase.auth.getSession()
   
       const response = await fetch(
@@ -211,7 +212,8 @@ const EventDetail = () => {
             ticketTypeId: selectedTicketTypeId,
             event_id: event?.id,
             userId: user.id,
-            marketplace_fee: marketplace_fee
+            marketplace_fee: marketplace_fee,
+            ...(rrpp && {rrpp})
           }),
         }
       )
