@@ -638,7 +638,7 @@ const Dashboard = () => {
           </div>
         </div>
         {/*RRPP SALES*/}
-        <div>
+        <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
         <h2>Seccion RRPPs</h2>
         {Object.keys(rrppSales).map((rrppName) => (
           <p key={rrppName}>
