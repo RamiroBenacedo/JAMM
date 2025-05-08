@@ -31,8 +31,13 @@ function Events() {
           .order('date', { ascending: true });
 
         if (error) throw error;
+        const now = new Date();
 
-        setEvents(data || []);
+        const filteredEvents = data.filter(event => {
+          const eventDateTime = new Date(`${event.date}T${event.time}`);
+          return eventDateTime <= now;
+        });
+        setEvents(filteredEvents || []);
       } catch (err) {
         console.error('Error fetching events:', err);
         setError('No se pudieron cargar los eventos. Por favor, intenta de nuevo más tarde.');
