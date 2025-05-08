@@ -46,6 +46,16 @@ interface Purchase {
   tickets: number;
 }
 
+type VentasRRPP = {
+  rrpp: string | null;
+  evento_id: string;
+  ticketCount: number;
+};
+
+type DashboardProps = {
+  creatorId: string;
+};
+
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -101,7 +111,8 @@ const Dashboard = () => {
                 total_price,
                 purchase_date,
                 payment_status,
-                payment_id
+                payment_id,
+                rrpp
               )
             )
           `)
@@ -139,6 +150,17 @@ const Dashboard = () => {
               .reduce((subtotal, p) => subtotal + p.quantity, 0);
           }, 0);
 
+          const rrppSales = filteredTicketTypes.reduce((rrppData, type) => {
+            type.purchased_tickets.forEach(ticket => {
+              const rrppName = ticket.rrpp || 'Sin RRPP';
+              if (!rrppData[rrppName]) {
+                rrppData[rrppName] = 0;
+              }
+              rrppData[rrppName] += ticket.quantity;
+            });
+            return rrppData;
+          }, {} as Record<string, number>);
+
           return {
             id: event.id,
             name: event.name,
@@ -147,10 +169,11 @@ const Dashboard = () => {
             ticketsAvailable,
             max_tickets_per_user: event.max_tickets_per_user,
             ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket),
-            totalFreeTickets: freeTickets
+            totalFreeTickets: freeTickets,
+            rrppSales
           };
         });
-    
+        console.log(stats);
         setEventStats(stats);
     
         // Calculate total stats
@@ -623,7 +646,28 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
+        {/* Seccion RRPPs */}
+        <div>
+          <h3>Ventas de RRPPs</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Evento</th>
+                <th>RRPP</th>
+                <th>Cantidad de Tickets</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventasRRPP.map((venta) => (
+                <tr key={`${venta.evento_id}-${venta.rrpp}`}>
+                  <td>{venta.evento_id}</td>
+                  <td>{venta.rrpp ? venta.rrpp : 'Sin RRPP'}</td>
+                  <td>{venta.ticketCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
