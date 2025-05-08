@@ -151,7 +151,7 @@ const Dashboard = () => {
             });
             return rrppData;
           }, {} as Record<string, number>);
-
+          console.log(rrppSales);
           return {
             id: event.id,
             name: event.name,
