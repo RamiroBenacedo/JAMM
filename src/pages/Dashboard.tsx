@@ -58,7 +58,6 @@ const Dashboard = () => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [editingTickets, setEditingTickets] = useState<{ [key: string]: TicketType }>({});
   const [saving, setSaving] = useState(false);
-  const [rrppSales, setRrppSales] = useState({});
   const [showNewTicketForm, setShowNewTicketForm] = useState(false);
   const [newTicket, setNewTicket] = useState<Omit<TicketType, 'id'>>({
     type: '',
@@ -102,8 +101,7 @@ const Dashboard = () => {
                 total_price,
                 purchase_date,
                 payment_status,
-                payment_id,
-                rrpp
+                payment_id
               )
             )
           `)
@@ -120,7 +118,7 @@ const Dashboard = () => {
               purchased_tickets: validPurchases
             };
           });
-          console.log(filteredTicketTypes);
+    
           const ticketsSold = filteredTicketTypes.reduce((total, type) =>
             total + type.purchased_tickets.reduce((sum, purchase) => sum + purchase.quantity, 0), 0);
     
@@ -141,17 +139,6 @@ const Dashboard = () => {
               .reduce((subtotal, p) => subtotal + p.quantity, 0);
           }, 0);
 
-          const rrppSales = filteredTicketTypes.reduce((rrppData, type) => {
-            type.purchased_tickets.forEach(ticket => {
-              const rrppName = ticket.rrpp || 'Sin RRPP';
-              if (!rrppData[rrppName]) {
-                rrppData[rrppName] = 0;
-              }
-              rrppData[rrppName] += ticket.quantity;
-            });
-            return rrppData;
-          }, {} as Record<string, number>);
-          console.log(rrppSales);
           return {
             id: event.id,
             name: event.name,
@@ -160,10 +147,10 @@ const Dashboard = () => {
             ticketsAvailable,
             max_tickets_per_user: event.max_tickets_per_user,
             ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket),
-            totalFreeTickets: freeTickets,
-            rrppSales
+            totalFreeTickets: freeTickets
           };
         });
+    
         setEventStats(stats);
     
         // Calculate total stats
@@ -636,15 +623,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
-        {/*RRPP SALES*/}
-        <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
-        <h2>Seccion RRPPs</h2>
-        {Object.keys(rrppSales).map((rrppName) => (
-          <p key={rrppName}>
-            {rrppName}: {rrppSales[rrppName as keyof typeof rrppSales]} tickets vendidos
-          </p>
-        ))}
-        </div>
+
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
