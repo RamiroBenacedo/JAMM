@@ -639,6 +639,7 @@ const Dashboard = () => {
         </div>
         {/*RRPP SALES*/}
         <div>
+        <h2>Seccion RRPPs</h2>
         {Object.keys(rrppSales).map((rrppName) => (
           <p key={rrppName}>
             {rrppName}: {rrppSales[rrppName as keyof typeof rrppSales]} tickets vendidos
