@@ -164,7 +164,6 @@ const Dashboard = () => {
             rrppSales
           };
         });
-        console.log(stats);
         setEventStats(stats);
     
         // Calculate total stats
