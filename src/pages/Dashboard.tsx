@@ -557,12 +557,12 @@ const Dashboard = () => {
         {/* RRPPs Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {eventStats.flatMap(event =>
-            event.rrppTickets?.map(rrpp => (
-              <div key={`${event.id}-${rrpp.rrpp}`} className="bg-white rounded-xl shadow-md p-4">
-                <h3 className="text-lg font-semibold">{rrpp.rrpp}</h3>
-                <p className="text-sm text-gray-500 mb-2">{event.name}</p>
+            (event.rrppTickets || []).map(rrpp => (
+              <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
+                <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
+                <p className="mt-2 text-3xl font-bold text-white">{event.name}</p>
                 <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
-                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales}</span></p>
+                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
               </div>
             ))
           )}
