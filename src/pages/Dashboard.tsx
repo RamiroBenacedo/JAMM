@@ -101,7 +101,8 @@ const Dashboard = () => {
                 total_price,
                 purchase_date,
                 payment_status,
-                payment_id
+                payment_id,
+                rrpp
               )
             )
           `)
@@ -139,6 +140,25 @@ const Dashboard = () => {
               .reduce((subtotal, p) => subtotal + p.quantity, 0);
           }, 0);
 
+          const rrppTicketsMap: { [rrpp: string]: number } = {};
+
+          event.ticket_types.forEach(type => {
+            if (!type.purchased_tickets) return;
+            type.purchased_tickets.forEach(ticket => {
+              if (ticket.rrpp !== null && ticket.payment_status === 1) {
+                if (!rrppTicketsMap[ticket.rrpp]) {
+                  rrppTicketsMap[ticket.rrpp] = 0;
+                }
+                rrppTicketsMap[ticket.rrpp] += ticket.quantity;
+              }
+            });
+          });
+          
+          const rrppTickets = Object.entries(rrppTicketsMap).map(([rrpp, quantity]) => ({
+            rrpp,
+            quantity
+          }));
+          console.log(rrppTickets);
           return {
             id: event.id,
             name: event.name,
@@ -147,7 +167,8 @@ const Dashboard = () => {
             ticketsAvailable,
             max_tickets_per_user: event.max_tickets_per_user,
             ticket_types: filteredTicketTypes.map(({ purchased_tickets, ...ticket }) => ticket),
-            totalFreeTickets: freeTickets
+            totalFreeTickets: freeTickets,
+            rrppTickets
           };
         });
     
