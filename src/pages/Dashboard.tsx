@@ -662,7 +662,7 @@ const Dashboard = () => {
         {eventStats.flatMap(event =>
           (event.rrppTickets || []).length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {event.rrppTickets.map(rrpp => (
+              {event.rrppTickets?.map(rrpp => (
                 <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
                   <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
                   <p className="mt-2 text-2xl font-bold text-white">{event.name}</p>
