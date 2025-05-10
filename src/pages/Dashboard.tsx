@@ -679,6 +679,9 @@ const Dashboard = () => {
             <p key={event.id} className="text-center text-lg text-gray-500">No se encontró información de ningún RRPP.</p>
           ) : null
         )}
+        <br />
+        <hr />
+        <br />
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
