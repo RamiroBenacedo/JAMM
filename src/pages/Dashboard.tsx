@@ -32,6 +32,12 @@ interface EventStats {
   max_tickets_per_user: number;
   totalFreeTickets: number;
   ticket_types: TicketType[];
+  rrppTickets?: {
+    rrpp: string;
+    quantity: number;
+    totalSales: number;
+    eventName: string;
+  }[];
 }
 
 interface ChartData {
@@ -140,25 +146,29 @@ const Dashboard = () => {
               .reduce((subtotal, p) => subtotal + p.quantity, 0);
           }, 0);
 
-          const rrppTicketsMap: { [rrpp: string]: number } = {};
+          const rrppTicketsMap: { [rrpp: string]: { quantity: number, totalSales: number } } = {};
 
           event.ticket_types.forEach(type => {
             if (!type.purchased_tickets) return;
+          
             type.purchased_tickets.forEach(ticket => {
               if (ticket.rrpp !== null && ticket.payment_status === 1) {
                 if (!rrppTicketsMap[ticket.rrpp]) {
-                  rrppTicketsMap[ticket.rrpp] = 0;
+                  rrppTicketsMap[ticket.rrpp] = { quantity: 0, totalSales: 0 };
                 }
-                rrppTicketsMap[ticket.rrpp] += ticket.quantity;
+                rrppTicketsMap[ticket.rrpp].quantity += ticket.quantity;
+                rrppTicketsMap[ticket.rrpp].totalSales += ticket.total_price;
               }
             });
           });
           
-          const rrppTickets = Object.entries(rrppTicketsMap).map(([rrpp, quantity]) => ({
+          const rrppTickets = Object.entries(rrppTicketsMap).map(([rrpp, { quantity, totalSales }]) => ({
             rrpp,
-            quantity
+            quantity,
+            totalSales,
+            eventName: event.name
           }));
-          console.log(rrppTickets);
+          
           return {
             id: event.id,
             name: event.name,
@@ -543,7 +553,20 @@ const Dashboard = () => {
             <p className="mt-2 text-3xl font-bold text-white">{totalStats.totalEvents}</p>
           </div>
         </div>
-
+        <hr />
+        {/* RRPPs Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {eventStats.flatMap(event =>
+            event.rrppTickets?.map(rrpp => (
+              <div key={`${event.id}-${rrpp.rrpp}`} className="bg-white rounded-xl shadow-md p-4">
+                <h3 className="text-lg font-semibold">{rrpp.rrpp}</h3>
+                <p className="text-sm text-gray-500 mb-2">{event.name}</p>
+                <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
+                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales}</span></p>
+              </div>
+            ))
+          )}
+        </div>
         {/* Chart Section */}
         <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
           <div className="flex justify-between items-center mb-6">
