@@ -660,8 +660,8 @@ const Dashboard = () => {
         {/* RRPPs Stats */}
         <h2 className="text-3xl font-semibold text-white mb-6">Estadísticas de RRPPs</h2>
         {eventStats.flatMap(event => {
-          const rrppTickets = event.rrppTickets ?? []; // Aseguramos que rrppTickets siempre sea un arreglo
-
+          const rrppTickets = event.rrppTickets ?? [];
+          console.log(rrppTickets.length);
           if (rrppTickets.length > 0) {
             return (
               <div key={event.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
