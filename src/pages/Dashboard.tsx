@@ -554,21 +554,6 @@ const Dashboard = () => {
           </div>
         </div>
         <hr />
-        {/* RRPPs Stats */}
-        <br />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <h2 className="text-3xl font-semibold text-white mb-6">Estadísticas de RRPP</h2>
-          {eventStats.flatMap(event =>
-            (event.rrppTickets || []).map(rrpp => (
-              <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
-                <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
-                <p className="mt-2 text-3xl font-bold text-white">{event.name}</p>
-                <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
-                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
-              </div>
-            ))
-          )}
-        </div>
         {/* Chart Section */}
         <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
           <div className="flex justify-between items-center mb-6">
@@ -669,7 +654,21 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
+        {/* RRPPs Stats */}
+        <br />
+        <h2 className="text-3xl font-semibold text-white mb-6">Estadísticas de RRPP</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {eventStats.flatMap(event =>
+            (event.rrppTickets || []).map(rrpp => (
+              <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
+                <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
+                <p className="mt-2 text-3xl font-bold text-white">{event.name}</p>
+                <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
+                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
+              </div>
+            ))
+          )}
+        </div>
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
