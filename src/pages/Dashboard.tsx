@@ -659,11 +659,13 @@ const Dashboard = () => {
         <br />
         {/* RRPPs Stats */}
         <h2 className="text-3xl font-semibold text-white mb-6">Estadísticas de RRPPs</h2>
-        {eventStats.flatMap(event => {
-          const rrppTickets = event.rrppTickets ?? [];
-          console.log(rrppTickets.length);
-          if (rrppTickets.length > 0) {
-            return (
+
+        {/* Comprobamos si al menos un evento tiene rrppTickets con datos */}
+        {eventStats.some(event => (event.rrppTickets ?? []).length > 0) ? (
+          eventStats.flatMap(event => {
+            const rrppTickets = event.rrppTickets ?? [];
+
+            return rrppTickets.length > 0 ? (
               <div key={event.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {rrppTickets.map(rrpp => (
                   <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
@@ -674,13 +676,11 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-            );
-          } else {
-            return (
-              <p key={event.id} className="text-center text-lg text-gray-500">No se encontró información de ningún RRPP.</p>
-            );
-          }
-        })}
+            ) : null;
+          })
+        ) : (
+          <p className="text-center text-lg text-gray-500">No se encontró información de ningún RRPP.</p>
+        )}
         <br />
         <hr />
         <br />
