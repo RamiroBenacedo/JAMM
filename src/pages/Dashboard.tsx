@@ -559,14 +559,24 @@ const Dashboard = () => {
           {eventStats.flatMap(event =>
             (event.rrppTickets || []).map(rrpp => (
               <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
-                <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
+                  <span className="text-sm text-[#56ae4a]">{rrpp.percentageSold ? `${(rrpp.percentageSold * 100).toFixed(2)}% vendido` : "Sin datos"}</span>
+                </div>
                 <p className="mt-2 text-3xl font-bold text-white">{event.name}</p>
-                <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
-                <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
+                  <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
+                </div>
+                <div className="mt-6 flex items-center justify-between text-xs text-gray-300">
+                  <p><strong>Disponible:</strong> {rrpp.quantityAvailable} tickets</p>
+                  <p><strong>Meta:</strong> {rrpp.goal ? `${rrpp.goal} tickets` : 'No definida'}</p>
+                </div>
               </div>
             ))
           )}
         </div>
+
         {/* Chart Section */}
         <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
           <div className="flex justify-between items-center mb-6">
