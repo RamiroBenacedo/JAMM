@@ -6,6 +6,8 @@ import { es } from 'date-fns/locale';
 import { ChevronDown, ChevronUp, Save, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import AgregarRRPP from '../components/AgregarRrpp'; 
+import ListaRRPP from '../components/ListaRRPP';
 
 interface TicketType {
   id: string;
@@ -14,6 +16,14 @@ interface TicketType {
   price: number;
   quantity: number;
   active: boolean;
+}
+
+interface RRPP {
+  id: string;
+  nombre?: string;
+  instagram?: string;
+  telefono?: string;
+  redes?: string;
 }
 
 interface Event {
@@ -79,6 +89,10 @@ const Dashboard = () => {
     totalEvents: 0,
     totalFreeTickets: 0
   });
+  const [refreshFlag, setRefreshFlag] = useState(false);
+  const handleRRPPAdded = () => {
+    setRefreshFlag(prev => !prev);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -88,7 +102,6 @@ const Dashboard = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch events with ticket types and purchased tickets
         const { data: events, error: eventsError } = await supabase
           .from('events')
           .select(`
@@ -116,7 +129,6 @@ const Dashboard = () => {
 
         if (eventsError) throw eventsError;
 
-        // Calculate stats for each event
         const stats: EventStats[] = events.map(event => {
           const filteredTicketTypes = event.ticket_types.map(type => {
             const validPurchases = type.purchased_tickets.filter(p => p.payment_status === 1).filter(p => p.payment_id != null);
@@ -184,7 +196,6 @@ const Dashboard = () => {
     
         setEventStats(stats);
     
-        // Calculate total stats
         const totals = stats.reduce((acc, event) => ({
           totalSales: acc.totalSales + event.totalSales,
           totalTicketsSold: acc.totalTicketsSold + event.ticketsSold,
@@ -201,7 +212,6 @@ const Dashboard = () => {
     
         setTotalStats(totals);
     
-        // Prepare purchase data
         const purchases = events.flatMap(event =>
           event.ticket_types.flatMap(type =>
             type.purchased_tickets
@@ -237,7 +247,6 @@ const Dashboard = () => {
     let data: ChartData[] = [];
 
     if (selectedTimeframe === 'months') {
-      // Group by months
       const monthlyData = new Map<string, { sales: number; tickets: number }>();
       
       const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -270,7 +279,6 @@ const Dashboard = () => {
       }));
 
     } else if (selectedTimeframe === 'days') {
-      // Group by days (last 30 days)
       const days = eachDayOfInterval({
         start: subMonths(new Date(), 1),
         end: new Date()
@@ -304,7 +312,6 @@ const Dashboard = () => {
       }));
 
     } else {
-      // Group by events
       data = eventStats.map(event => ({
         date: event.name,
         sales: event.totalSales,
@@ -330,7 +337,6 @@ const Dashboard = () => {
       setSaving(true);
       setError(null);
       
-      // Update each modified ticket type
       for (const [ticketId, ticket] of Object.entries(editingTickets)) {
         const { error } = await supabase
           .from('ticket_types')
@@ -344,7 +350,6 @@ const Dashboard = () => {
         if (error) throw error;
       }
 
-      // Refresh data to show updated values
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select(`
@@ -371,7 +376,6 @@ const Dashboard = () => {
 
       if (eventsError) throw eventsError;
 
-      // Calculate stats for each event
       const stats: EventStats[] = events.map(event => {
         const ticketsSold = event.ticket_types.reduce((total, type) => 
           total + type.purchased_tickets.reduce((sum, purchase) => sum + purchase.quantity, 0), 0);
@@ -427,7 +431,6 @@ const Dashboard = () => {
       setSaving(true);
       setError(null);
 
-      // Insert new ticket type
       const { data: ticketData, error: ticketError } = await supabase
         .from('ticket_types')
         .insert({
@@ -442,7 +445,6 @@ const Dashboard = () => {
 
       if (ticketError) throw ticketError;
 
-      // Update local state
       const updatedEventStats = eventStats.map(event => {
         if (event.id === eventId) {
           return {
@@ -456,7 +458,6 @@ const Dashboard = () => {
 
       setEventStats(updatedEventStats);
 
-      // Reset form
       setNewTicket({
         type: '',
         description: '',
@@ -497,7 +498,6 @@ const Dashboard = () => {
         }))
       );
   
-      // Show success message
       setError('Ticket marcado como inactivo exitosamente');
       setTimeout(() => setError(null), 3000);
   
@@ -553,6 +553,7 @@ const Dashboard = () => {
             <p className="mt-2 text-3xl font-bold text-white">{totalStats.totalEvents}</p>
           </div>
         </div>
+
         {/* Chart Section */}
         <div className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700 mb-8">
           <div className="flex justify-between items-center mb-6">
@@ -653,37 +654,27 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
         {/* Separacion */}
         <br />
         <hr />
         <br />
-        {/* RRPPs Stats */}
-        <h2 className="text-3xl font-semibold text-white mb-6">Estadísticas de RRPPs</h2>
 
-        {/* Comprobamos si al menos un evento tiene rrppTickets con datos */}
-        {eventStats.some(event => (event.rrppTickets ?? []).length > 0) ? (
-          eventStats.flatMap(event => {
-            const rrppTickets = event.rrppTickets ?? [];
-
-            return rrppTickets.length > 0 ? (
-              <div key={event.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {rrppTickets.map(rrpp => (
-                  <div key={`${event.id}-${rrpp.rrpp}`} className="bg-[#1f1f1f] rounded-lg p-6 border border-gray-700">
-                    <h3 className="text-gray-400 text-sm font-medium">{rrpp.rrpp}</h3>
-                    <p className="mt-2 text-2xl font-bold text-white">{event.name}</p>
-                    <p className="text-sm">🎟️ Tickets vendidos: <span className="font-medium">{rrpp.quantity}</span></p>
-                    <p className="text-sm">💰 Total vendido: <span className="font-medium">${rrpp.totalSales.toFixed(2)}</span></p>
-                  </div>
-                ))}
-              </div>
-            ) : null;
-          })
-        ) : (
-          <p className="text-center text-lg text-gray-500">No se encontró información de ningún RRPP.</p>
-        )}
+        {/* RRPPs Agregar */}
+        <AgregarRRPP 
+          userId={user?.id || ''} 
+          onRRPPAdded={handleRRPPAdded} 
+        />
+        
+        <ListaRRPP 
+          userId={user?.id || ''}
+          refreshFlag={refreshFlag}
+        />
+        <br />
         <br />
         <hr />
         <br />
+
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
