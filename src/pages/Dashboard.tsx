@@ -8,7 +8,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import AgregarRRPP from '../components/AgregarRrpp'; 
 import ListaRRPP from '../components/ListaRRPP';
-
+import AsignarUsuario from '../components/AsignarUsuario';
+import ListaUsuariosEvento from '../components/ListaUsuariosEvento';
 interface TicketType {
   id: string;
   type: string;
@@ -523,7 +524,8 @@ const Dashboard = () => {
     <div className="bg-[#2a2a2a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl font-bold text-white mb-8">Dashboard</h1>
-
+        <AsignarUsuario onUsuarioAsignado={() => setRefreshFlag(prev => !prev)} />
+        <ListaUsuariosEvento refreshFlag={refreshFlag} />
         {error && (
           <div className="mb-8 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded">
             {error}

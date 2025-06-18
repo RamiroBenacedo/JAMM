@@ -29,12 +29,19 @@ const Home = () => {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <Link 
+                {/*<Link 
                   to="/crear-evento" 
                   className="primary-button flex items-center"
                 >
                   🎟️ Crea tu evento
-                </Link>
+                </Link>*/}
+                {<Link 
+                    to="https://wa.me/5491165822002?text=¡Hola! Quiero obtener mas información para trabajar con JAMM" 
+                    target='_blank'
+                    className="primary-button flex items-center"
+                  >
+                  💼 ¡Trabajemos juntos!
+                </Link>}
                 <Link 
                   to="/eventos" 
                   className="secondary-button flex items-center"
