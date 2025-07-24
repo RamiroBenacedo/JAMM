@@ -12,6 +12,9 @@ import Profile from './pages/Profile';
 import Events from './pages/Events';
 import Dashboard from './pages/Dashboard';
 import Success from './pages/Success';
+import MisEventos from './pages/MisEventos';
+import Rrpp from './pages/Rrpp';
+import EventDetailsRouter from './pages/EventDetailsRouter';
 function App() {
   return (
     <AuthProvider>
@@ -26,8 +29,11 @@ function App() {
               <Route path="/crear-evento" element={<CreateEvent />} />
               <Route path="/eventos" element={<Events />} />
               <Route path="/evento/:id" element={<EventDetail />} />
-              <Route path="/perfil" element={<Profile />} />
+              <Route path="/eventos/:id" element={<EventDetailsRouter />} />
+              <Route path="/mis-tickets" element={<Profile />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/rrpps" element={<Rrpp />} />
+              <Route path="/mis-eventos" element={<MisEventos />} />
               <Route path="/success" element={<Success />} />
             </Routes>
           </main>

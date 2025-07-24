@@ -1,0 +1,32 @@
+/* switch.css */
+.switch-root {
+  all: unset;
+  width: 42px;
+  height: 25px;
+  background-color: #555;
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.switch-root[data-state='checked'] {
+  background-color: #4ade80; /* Green when active */
+}
+
+.switch-thumb {
+  display: block;
+  width: 21px;
+  height: 21px;
+  background-color: white;
+  border-radius: 9999px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  will-change: transform;
+}
+
+.switch-root[data-state='checked'] .switch-thumb {
+  transform: translateX(17px);
+}

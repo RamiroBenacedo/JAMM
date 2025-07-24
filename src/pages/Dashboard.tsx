@@ -96,11 +96,11 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (!user) {
+    /*if (!user) {
       navigate('/ingresar');
       return;
-    }
-
+    }*/
+    if (!user?.id) return;
     const fetchData = async () => {
       try {
         const { data: events, error: eventsError } = await supabase

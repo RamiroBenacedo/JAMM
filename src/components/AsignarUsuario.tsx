@@ -9,14 +9,15 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
   const [email, setEmail] = useState('');
   const [usuarioEncontrado, setUsuarioEncontrado] = useState<any>(null);
   const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false);
-  const [mostrarModalRol, setMostrarModalRol] = useState(false);
-  const [rolSeleccionado, setRolSeleccionado] = useState('organizador');
-  const [eventoSeleccionado, setEventoSeleccionado] = useState('');
+  const [mostrarModalAsignacion, setMostrarModalAsignacion] = useState(false);
+  const [rolSeleccionado, setRolSeleccionado] = useState('rrpp');
   const [eventos, setEventos] = useState<any[]>([]);
+  const [eventosAsignados, setEventosAsignados] = useState<string[]>([]);
   const [mensaje, setMensaje] = useState('');
   const [asignadoExitosamente, setAsignadoExitosamente] = useState(false);
   const [modalYaExiste, setModalYaExiste] = useState(false);
-
+  const [redes, setRedes] = useState('');
+  const [telefono, setTelefono] = useState('');
   const buscarUsuario = async () => {
     const { data, error } = await supabase
       .from('user_emails')
@@ -44,48 +45,98 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
     if (!error) setEventos(data || []);
   };
 
-  const confirmarAsignacion = async () => {
+  const toggleAsignacionEvento = (eventId: string) => {
+    if (eventosAsignados.includes(eventId)) {
+      setEventosAsignados(prev => prev.filter(id => id !== eventId));
+    } else {
+      setEventosAsignados(prev => [...prev, eventId]);
+    }
+  };
+  const generateCodigo = () => {
+    return Math.random().toString(36).substring(2,10).toUpperCase();
+  };
+  const confirmarAsignacionFinal = async () => {
     if (!usuarioEncontrado) return;
 
-    const { data: existentes, error: errorBusqueda } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('user_id', usuarioEncontrado.id)
-    .eq('event_id', eventoSeleccionado);
-
-    if (existentes && existentes.length > 0) {
-    setModalYaExiste(true);
-    return;
-    }
-
-    const { error } = await supabase
+    // 1️⃣ Perfil
+    let { data: perfiles, error: perfilErr } = await supabase
       .from('profiles')
-      .upsert({
-        user_id: usuarioEncontrado.id,
-        rol: rolSeleccionado,
-        event_id: eventoSeleccionado
-      });
+      .select('id')
+      .eq('user_id', usuarioEncontrado.id)
+      .eq('rol', rolSeleccionado);
+    if (perfilErr) { setMensaje('Error verificando perfil'); return; }
 
-    if (!error) {
-      setAsignadoExitosamente(true);
-      onUsuarioAsignado();
-      setTimeout(() => setAsignadoExitosamente(false), 3000);
-    } else {
-      setMensaje('Error al asignar el usuario.');
+    let profileId = perfiles?.[0]?.id;
+    if (!profileId) {
+      const { data: newP, error: insPerfErr } = await supabase
+        .from('profiles')
+        .insert({ user_id: usuarioEncontrado.id, rol: rolSeleccionado })
+        .select('id')
+        .single();
+      if (insPerfErr || !newP) { setMensaje('No pude crear el perfil'); return; }
+      profileId = newP.id;
     }
 
-    setMostrarModalRol(false);
+    // 2️⃣ RRPP (si aplica)
+    let rrppId: number|undefined;
+    if (rolSeleccionado === 'rrpp') {
+      const { data: rrpps, error: rrppErr } = await supabase
+        .from('rrpp')
+        .select('id, codigo')
+        .eq('profile_id', profileId)
+        .limit(1);
+      if (rrppErr) { setMensaje('Error verificando RRPP'); return; }
+
+      if (rrpps?.length) {
+        rrppId = rrpps[0].id;
+      } else {
+        const codigo = generateCodigo();
+        const { data: newR, error: insRErr } = await supabase
+          .from('rrpp')
+          .insert({
+            profile_id: profileId,
+            nombre: usuarioEncontrado.full_name,
+            redes,
+            telefono,
+            codigo
+          })
+          .select('id')
+          .single();
+        if (insRErr || !newR) { setMensaje('No pude crear RRPP'); return; }
+        rrppId = newR.id;
+      }
+    }
+
+    // 3️⃣ Asignar eventos
+    if (rrppId) {
+      const inserts = eventosAsignados.map(eid => ({
+        rrpp_id: rrppId,
+        event_id: eid,
+        activo: true
+      }));
+      const { error: insEvtErr } = await supabase
+        .from('profile_events')
+        .insert(inserts);
+      if (insEvtErr) { setMensaje('Error asignando eventos'); return; }
+    }
+
+    setAsignadoExitosamente(true);
+    onUsuarioAsignado();
+    setTimeout(() => setAsignadoExitosamente(false), 3000);
+    setMostrarModalAsignacion(false);
     setUsuarioEncontrado(null);
     setEmail('');
+    setEventosAsignados([]);
   };
 
+
   useEffect(() => {
-    if (mostrarModalRol) cargarEventos();
-  }, [mostrarModalRol]);
+    if (usuarioEncontrado) cargarEventos();
+  }, [usuarioEncontrado]);
 
   return (
     <div className="bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 mb-8">
-      <h2 className="text-xl font-semibold text-white mb-4">Asignar usuario a evento</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Asignar RRPP a eventos</h2>
       <div className="flex gap-4 items-end">
         <input
           type="email"
@@ -114,8 +165,81 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
         </motion.div>
       )}
 
-      {/* Modal Confirmación */}
       <AnimatePresence>
+        {mostrarModalAsignacion && usuarioEncontrado && (
+          <motion.div
+            // … animaciones …
+            className="bg-[#111] border border-gray-700 mt-6 p-6 rounded-lg"
+          >
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Datos de RRPP para {usuarioEncontrado.full_name}
+            </h3>
+
+            {/* 3️⃣ Inputs para redes y teléfono */}
+            <div className="mb-4">
+              <label className="block text-white mb-1">Instagram / Redes</label>
+              <input
+                type="text"
+                value={redes}
+                onChange={e => setRedes(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+                placeholder="p.ej. @mis.redes"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-white mb-1">Teléfono</label>
+              <input
+                type="tel"
+                value={telefono}
+                onChange={e => setTelefono(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+                placeholder="p.ej. +34 600 123 456"
+              />
+            </div>
+
+            <h4 className="text-white font-medium mb-2">Seleccionar eventos</h4>
+                        <table className="w-full text-sm text-white">
+              <thead>
+                <tr className="bg-[#222]">
+                  <th className="px-4 py-2 text-left">Evento</th>
+                  <th className="px-4 py-2 text-left">Vinculado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {eventos.map((evento) => (
+                  <tr key={evento.id} className="border-t border-gray-700">
+                    <td className="px-4 py-2">{evento.name}</td>
+                    <td className="px-4 py-2">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-5 w-5 text-green-500"
+                          checked={eventosAsignados.includes(evento.id)}
+                          onChange={() => toggleAsignacionEvento(evento.id)}
+                        />
+                      </label>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setMostrarModalAsignacion(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarAsignacionFinal}
+                className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
+              >
+                Confirmar y Guardar
+              </button>
+            </div>
+          </motion.div>
+        )}
         {mostrarModalConfirmacion && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -144,7 +268,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
                   className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
                   onClick={() => {
                     setMostrarModalConfirmacion(false);
-                    setMostrarModalRol(true);
+                    setMostrarModalAsignacion(true);
                   }}
                 >
                   Sí
@@ -155,75 +279,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
         )}
       </AnimatePresence>
 
-    {/* Modal Asignar Rol */}
-    <AnimatePresence>
-    {mostrarModalRol && (
-        <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        >
-        <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="relative bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 w-full max-w-md"
-        >
-            {/* Botón X para cerrar */}
-            <button
-            onClick={() => setMostrarModalRol(false)}
-            className="absolute top-3 right-3 text-gray-400 hover:text-white"
-            aria-label="Cerrar"
-            >
-            <X className="h-5 w-5" />
-            </button>
 
-            <h3 className="text-white text-lg font-semibold mb-4">Asignar rol y evento</h3>
-
-            <div className="mb-4">
-            <label className="block text-gray-300 text-sm mb-1">Rol</label>
-            <select
-                className="w-full bg-[#111] text-white border border-gray-600 rounded-lg px-3 py-2"
-                value={rolSeleccionado}
-                onChange={(e) => setRolSeleccionado(e.target.value)}
-            >
-                <option value="organizador">Organizador</option>
-                <option value="rrpp">RRPP</option>
-            </select>
-            </div>
-
-            <div className="mb-4">
-            <label className="block text-gray-300 text-sm mb-1">Evento</label>
-            <select
-                className="w-full bg-[#111] text-white border border-gray-600 rounded-lg px-3 py-2"
-                value={eventoSeleccionado}
-                onChange={(e) => setEventoSeleccionado(e.target.value)}
-            >
-                <option value="">Seleccionar evento</option>
-                {eventos.map((evento) => (
-                <option key={evento.id} value={evento.id}>
-                    {evento.name}
-                </option>
-                ))}
-            </select>
-            </div>
-
-            <div className="flex justify-end">
-            <button
-                onClick={confirmarAsignacion}
-                className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
-            >
-                Confirmar
-            </button>
-            </div>
-        </motion.div>
-        </motion.div>
-    )}
-    </AnimatePresence>
-
-      {/* Modal de usuario ya asignado */}
       <AnimatePresence>
         {modalYaExiste && (
           <motion.div
@@ -239,8 +295,8 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
               transition={{ duration: 0.2 }}
               className="bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 w-full max-w-md"
             >
-              <h3 className="text-white text-lg font-semibold mb-4">Este usuario ya está asignado</h3>
-              <p className="text-gray-300 text-sm mb-6">Este usuario ya fue asignado al evento seleccionado.</p>
+              <h3 className="text-white text-lg font-semibold mb-4">Este usuario ya tiene rol asignado</h3>
+              <p className="text-gray-300 text-sm mb-6">Ya tiene un perfil con el mismo rol.</p>
               <div className="flex justify-end">
                 <button
                   onClick={() => setModalYaExiste(false)}

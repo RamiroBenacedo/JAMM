@@ -10,6 +10,9 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [rol, setRol] = useState<string | null>(null);
+  const [tieneRol, setTieneRol] = useState(false);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
@@ -27,6 +30,26 @@ const Navbar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchRol = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('rol')
+        .eq('user_id', user.id);
+
+      if (!error && data.length > 0) {
+        setTieneRol(true);
+        setRol(data[0].rol);
+      } else {
+        setTieneRol(false);
+        setRol(null);
+      }
+    };
+
+    fetchRol();
+  }, [user]);
 
   return (
     <nav className="bg-white border-b border-gray-200 relative z-50">
@@ -54,24 +77,48 @@ const Navbar = () => {
                     <UserCircle className="h-6 w-6" />
                   </button>
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                      <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                    <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                      <div className="py-1 text-sm text-gray-700" role="menu" aria-orientation="vertical">
                         <Link
-                          to="/perfil"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          to="/mis-tickets"
                           onClick={() => setIsDropdownOpen(false)}
+                          className="block px-4 py-2 hover:bg-gray-100"
                           role="menuitem"
                         >
-                          Mi Perfil
+                          Mis Tickets
                         </Link>
+
+                        {tieneRol && (
+                          <Link
+                            to="/mis-eventos"
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="block px-4 py-2 hover:bg-gray-100"
+                            role="menuitem"
+                          >
+                            Mis Eventos
+                          </Link>
+                        )}
+
+                        {rol === 'productora' && (
+                          <Link
+                            to="/rrpps"
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="block px-4 py-2 hover:bg-gray-100"
+                            role="menuitem"
+                          >
+                            RRPPs
+                          </Link>
+                        )}
+
                         <Link
-                          to="/dashboard"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          to="/configuracion"
                           onClick={() => setIsDropdownOpen(false)}
+                          className="block px-4 py-2 hover:bg-gray-100"
                           role="menuitem"
                         >
-                          Dashboard
+                          Configuración
                         </Link>
+
                         <button
                           onClick={() => {
                             handleLogout();
