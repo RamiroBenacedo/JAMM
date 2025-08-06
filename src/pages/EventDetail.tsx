@@ -259,7 +259,7 @@ const handleGuestConfirm = async () => {
   if (loading || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#2a2a2a]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ae4a]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
       </div>
     );
   }
@@ -273,21 +273,30 @@ const handleGuestConfirm = async () => {
   });
 
   return (
-    <div className="bg-[#2a2a2a] min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-8">
-        <div className="relative pb-[56.25%] rounded-lg overflow-hidden shadow-lg">
+    <div className="bg-[#2a2a2a] min-h-screen py-6 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-4 lg:gap-8">
+        <div className="relative pb-[75%] lg:pb-[56.25%] rounded-lg overflow-hidden shadow-lg">
           <img
             src={event.image_url}
             alt={event.name}
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-4">{event.name}</h1>
-          <div className="flex items-center text-gray-300 space-x-4 mb-6">
-            <Calendar /><span>{format(new Date(event.date), "EEEE, d 'de' MMMM", { locale: es })}</span>
-            <Clock /><span>{event.time}</span>
-            <MapPin /><span>{event.location}</span>
+        <div className="mt-4 lg:mt-0">
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">{event.name}</h1>
+          <div className="flex flex-wrap items-center text-gray-300 gap-3 lg:gap-4 mb-6">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2" style={{ color: '#FF5722' }}/>
+              <span>{format(new Date(event.date), "EEEE, d 'de' MMMM", { locale: es })}</span>
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-2" style={{ color: '#FF5722' }}/>
+              <span>{event.time}</span>
+            </div>
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2" style={{ color: '#FF5722' }}/>
+              <span>{event.location}</span>
+            </div>
           </div>
           <p className="text-gray-400 mb-8">{event.description}</p>
           {purchaseError && (
@@ -299,7 +308,7 @@ const handleGuestConfirm = async () => {
           <div className="space-y-4">
             {visibleTickets.map(tk => (
               <div key={tk.id} className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-700">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-start lg:items-center">
                   <div>
                     <h3 className="text-lg text-white">{tk.type}</h3>
                     <p className="text-gray-400">{tk.description}</p>
@@ -309,25 +318,25 @@ const handleGuestConfirm = async () => {
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <button onClick={() => handleQuantityChange(tk.id, -1)} disabled={(ticketQuantities[tk.id]||0) <= 0} className="p-1 bg-[#2a2a2a] rounded disabled:opacity-50"><Minus /></button>
+                    <button onClick={() => handleQuantityChange(tk.id, -1)} disabled={(ticketQuantities[tk.id]||0) <= 0} className="p-2 bg-[#2a2a2a] rounded disabled:opacity-50"><Minus /></button>
                     <span className="w-8 text-center text-white">{ticketQuantities[tk.id] || 0}</span>
-                    <button onClick={() => handleQuantityChange(tk.id, 1)} disabled={tk.type !== 'Cortesía' && ((ticketQuantities[tk.id]||0) >= tk.quantity || (ticketQuantities[tk.id]||0) >= event.max_tickets_per_user)} className="p-1 bg-[#2a2a2a] rounded disabled:opacity-50"><Plus /></button>
+                    <button onClick={() => handleQuantityChange(tk.id, 1)} disabled={tk.type !== 'Cortesía' && ((ticketQuantities[tk.id]||0) >= tk.quantity || (ticketQuantities[tk.id]||0) >= event.max_tickets_per_user)} className="p-2 bg-[#2a2a2a] rounded disabled:opacity-50"><Plus /></button>
                   </div>
                 </div>
               </div>
             ))}
             {getTotalTickets() > 0 && (
               <div className="mt-6 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
                   <div>
                     <p className="text-gray-300">Total entradas: {getTotalTickets()}</p>
                     <p className="text-2xl font-bold text-white">Total: ${calculateTotal()}</p>
                   </div>
-                  <button onClick={handlePurchase} disabled={purchasing} className="px-6 py-3 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b] disabled:opacity-50">
+                  <button onClick={handlePurchase} disabled={purchasing} className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50 transition-all">
                     {purchasing ? 'Procesando...' : 'Comprar entradas'}
                   </button>
                 </div>
-                <p className="text-sm text-[#56ae4a] mt-2">+{event.marketplace_fee}% de costo de servicio</p>
+                <p className="text-sm mt-2" style={{ color: '#FF5722' }}>+{event.marketplace_fee}% de costo de servicio</p>
               </div>
             )}
           </div>
@@ -336,23 +345,23 @@ const handleGuestConfirm = async () => {
 
       {/* Modal de login/guest */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 max-w-sm w-full">
             <h3 className="text-white text-lg mb-4 text-center">¿Cómo deseas continuar?</h3>
-            <button onClick={() => navigate('/ingresar')} className="w-full py-2 bg-blue-600 text-white rounded mb-3">Iniciar sesión / Registrarse</button>
-            <button onClick={() => { setContinueAsGuest(true); setShowAuthModal(false); setGuestStep(1); setShowGuestWizard(true); }} className="w-full py-2 bg-gray-600 text-white rounded">Continuar sin registrarse</button>
-            <button onClick={() => setShowAuthModal(false)} className="mt-2 text-gray-400 underline">Cancelar</button>
+            <button onClick={() => navigate('/ingresar')} className="w-full py-3 bg-[#FF5722] text-white rounded mb-3 hover:bg-opacity-90 transition-all">Iniciar sesión / Registrarse</button>
+            <button onClick={() => { setContinueAsGuest(true); setShowAuthModal(false); setGuestStep(1); setShowGuestWizard(true); }} className="w-full py-3 bg-gray-600 text-white rounded hover:bg-opacity-90 transition-all">Continuar sin registrarse</button>
+            <button onClick={() => setShowAuthModal(false)} className="w-full mt-2 text-gray-400 hover:text-white transition-all">Cancelar</button>
           </div>
         </div>
       )}
 
       {/* Wizard para guest */}
       {showGuestWizard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 max-w-3xl w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1f1f1f] p-6 rounded-lg border border-gray-700 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between mb-6">
               {[1, 2, 3].map(n => (
-                <div key={n} className={`flex-1 border-b-2 ${guestStep >= n ? 'border-blue-500' : 'border-gray-600'}`}>
+                <div key={n} className={`flex-1 border-b-2 ${guestStep >= n ? 'border-[#FF5722]' : 'border-gray-600'}`}>
                   <span className="block text-center text-sm text-gray-400">{n === 1 ? 'Revisa tu orden' : n === 2 ? 'Ingresa tus datos' : 'Confirma tu compra'}</span>
                 </div>
               ))}
@@ -376,28 +385,28 @@ const handleGuestConfirm = async () => {
                     <span>${calculateTotal()}</span>
                   </div>
                 </div>
-                <button onClick={() => setGuestStep(2)} className="mt-6 w-full py-3 bg-blue-600 rounded text-white">Siguiente</button>
+                <button onClick={() => setGuestStep(2)} className="mt-6 w-full py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all">Siguiente</button>
               </>
             )}
 
             {guestStep === 2 && (
               <>
-                <div className="grid grid-cols-2 gap-4">
-                  <input placeholder="Nombre" value={guestData.nombre} onChange={e => setGuestData({...guestData, nombre: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <input placeholder="Apellido" value={guestData.apellido} onChange={e => setGuestData({...guestData, apellido: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <select value={guestData.idType} onChange={e => setGuestData({...guestData, idType: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <input placeholder="Nombre" value={guestData.nombre} onChange={e => setGuestData({...guestData, nombre: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <input placeholder="Apellido" value={guestData.apellido} onChange={e => setGuestData({...guestData, apellido: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <select value={guestData.idType} onChange={e => setGuestData({...guestData, idType: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full">
                     <option>DNI</option>
                     <option>Pasaporte</option>
                   </select>
-                  <input placeholder="Número de identificación" value={guestData.idNumber} onChange={e => setGuestData({...guestData, idNumber: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <input placeholder="Mail" type="email" value={guestData.email} onChange={e => setGuestData({...guestData, email: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <input placeholder="Confirmar mail" type="email" value={guestData.confirmEmail} onChange={e => setGuestData({...guestData, confirmEmail: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <input placeholder="Número de teléfono" value={guestData.phone} onChange={e => setGuestData({...guestData, phone: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
-                  <input placeholder="País" value={guestData.country} onChange={e => setGuestData({...guestData, country: e.target.value})} className="p-2 rounded bg-[#2a2a2a] text-white" />
+                  <input placeholder="Número de identificación" value={guestData.idNumber} onChange={e => setGuestData({...guestData, idNumber: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <input placeholder="Mail" type="email" value={guestData.email} onChange={e => setGuestData({...guestData, email: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <input placeholder="Confirmar mail" type="email" value={guestData.confirmEmail} onChange={e => setGuestData({...guestData, confirmEmail: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <input placeholder="Número de teléfono" value={guestData.phone} onChange={e => setGuestData({...guestData, phone: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+                  <input placeholder="País" value={guestData.country} onChange={e => setGuestData({...guestData, country: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
                 </div>
-                <div className="flex justify-between mt-6">
-                  <button onClick={() => setGuestStep(1)} className="px-6 py-2 border rounded text-white">Anterior</button>
-                  <button onClick={() => setGuestStep(3)} className="px-6 py-2 bg-blue-600 rounded text-white">Siguiente</button>
+                <div className="flex flex-col lg:flex-row justify-between gap-3 mt-6">
+                  <button onClick={() => setGuestStep(1)} className="w-full lg:w-auto px-6 py-3 border rounded text-white hover:border-[#FF5722] transition-all order-2 lg:order-1">Anterior</button>
+                  <button onClick={() => setGuestStep(3)} className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all order-1 lg:order-2">Siguiente</button>
                 </div>
               </>
             )}
@@ -405,21 +414,21 @@ const handleGuestConfirm = async () => {
             {guestStep === 3 && (
               <>
                 <p className="text-white mb-4">¡Ya casi es tuyo! Revisa tus datos</p>
-                <div className="text-gray-300 space-y-1">
+                <div className="text-gray-300 space-y-2">
                   <div><strong>Nombre y apellido:</strong> {guestData.nombre} {guestData.apellido}</div>
                   <div><strong>Identificación:</strong> {guestData.idType} - {guestData.idNumber}</div>
                   <div><strong>Mail:</strong> {guestData.email}</div>
                   <div><strong>Número de teléfono:</strong> {guestData.phone}</div>
                 </div>
                 <hr className="my-4 border-gray-600" />
-                <div className="space-y-1 text-gray-300">
+                <div className="space-y-2 text-gray-300">
                   <div><strong>Nombre del evento:</strong> {event.name}</div>
                   <div><strong>Tus entradas:</strong> {getTotalTickets()}× entradas</div>
                   <div><strong>Total a pagar:</strong> ${calculateTotal()}</div>
                 </div>
-                <div className="flex justify-between mt-6">
-                  <button onClick={() => setGuestStep(2)} className="px-6 py-2 border rounded text-white">Anterior</button>
-                  <button onClick={handleGuestConfirm} disabled={purchasing} className="px-6 py-2 bg-blue-600 rounded text-white disabled:opacity-50">
+                <div className="flex flex-col lg:flex-row justify-between gap-3 mt-6">
+                  <button onClick={() => setGuestStep(2)} className="w-full lg:w-auto px-6 py-3 border rounded text-white hover:border-[#FF5722] transition-all order-2 lg:order-1">Anterior</button>
+                  <button onClick={handleGuestConfirm} disabled={purchasing} className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all disabled:opacity-50 order-1 lg:order-2">
                     {purchasing ? 'Procesando...' : 'Comprar'}
                   </button>
                 </div>

@@ -142,12 +142,12 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-600 bg-[#111] text-white"
+          className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[#232323] focus:border-[#FF5722] focus:outline-none transition-colors w-full"
           placeholder="Buscar por email"
         />
         <button
           onClick={buscarUsuario}
-          className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
+          className="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-opacity-90 transition-colors"
         >
           Buscar
         </button>
@@ -159,7 +159,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="mt-4 flex items-center text-green-400"
+          className="mt-4 flex items-center text-[#FF5722]"
         >
           <CheckCircle className="mr-2" /> Usuario asignado correctamente
         </motion.div>
@@ -182,7 +182,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
                 type="text"
                 value={redes}
                 onChange={e => setRedes(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[#232323] focus:border-[#FF5722] focus:outline-none transition-colors"
                 placeholder="p.ej. @mis.redes"
               />
             </div>
@@ -192,7 +192,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
                 type="tel"
                 value={telefono}
                 onChange={e => setTelefono(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-[#232323] focus:border-[#FF5722] focus:outline-none transition-colors"
                 placeholder="p.ej. +34 600 123 456"
               />
             </div>
@@ -213,7 +213,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
                       <label className="inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
-                          className="form-checkbox h-5 w-5 text-green-500"
+                          className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer transition-colors"
                           checked={eventosAsignados.includes(evento.id)}
                           onChange={() => toggleAsignacionEvento(evento.id)}
                         />
@@ -227,13 +227,13 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setMostrarModalAsignacion(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmarAsignacionFinal}
-                className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
+                className="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-opacity-90 transition-colors"
               >
                 Confirmar y Guardar
               </button>
@@ -259,13 +259,13 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
               <p className="text-white text-sm mb-2">Email: {usuarioEncontrado.email}</p>
               <div className="flex justify-end space-x-4 mt-4">
                 <button
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   onClick={() => setMostrarModalConfirmacion(false)}
                 >
                   No
                 </button>
                 <button
-                  className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b]"
+                  className="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-opacity-90 transition-colors"
                   onClick={() => {
                     setMostrarModalConfirmacion(false);
                     setMostrarModalAsignacion(true);
@@ -300,7 +300,7 @@ const AsignarUsuario = ({ onUsuarioAsignado }: { onUsuarioAsignado: () => void }
               <div className="flex justify-end">
                 <button
                   onClick={() => setModalYaExiste(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Cerrar
                 </button>

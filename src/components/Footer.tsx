@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Ticket, Heart, Mail, Twitter, Instagram } from 'lucide-react';
+import LogoImage from '../constants/img/logo.png';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -12,12 +13,8 @@ const Footer = () => {
           {/* Logo and description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center">
-              <Ticket className="h-8 w-8 text-primary" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">JAMM</span>
+              <img src={LogoImage} alt="Logo" className="h-30 w-40" />
             </div>
-            <p className="mt-4 text-gray-600">
-              La plataforma líder en venta de entradas para eventos. Gestiona tus eventos y vende entradas de forma segura y sencilla.
-            </p>
           </div>
 
           {/* Quick links */}
@@ -27,17 +24,17 @@ const Footer = () => {
             </h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <Link to="/eventos" className="text-gray-600 hover:text-primary transition-colors">
+                <Link to="/eventos" className="text-gray-600 hover:text-[#FF5722] transition-colors">
                   Explorar eventos
                 </Link>
               </li>
               <li>
-                <Link to="/crear-evento" className="text-gray-600 hover:text-primary transition-colors">
+                <Link to="/crear-evento" className="text-gray-600 hover:text-[#FF5722] transition-colors">
                   Crear evento
                 </Link>
               </li>
               <li>
-                <Link to="/perfil" className="text-gray-600 hover:text-primary transition-colors">
+                <Link to="/perfil" className="text-gray-600 hover:text-[#FF5722] transition-colors">
                   Mi perfil
                 </Link>
               </li>
@@ -53,7 +50,7 @@ const Footer = () => {
               <li>
                 <a 
                   href="mailto:jamm.qr@gmail.com" 
-                  className="text-gray-600 hover:text-primary transition-colors flex items-center"
+                  className="text-gray-600 hover:text-[#FF5722] transition-colors flex items-center"
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   jamm.qr@gmail.com
@@ -64,7 +61,7 @@ const Footer = () => {
                   href="https://twitter.com/jamm.qr" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-gray-600 hover:text-primary transition-colors flex items-center"
+                  className="text-gray-600 hover:text-[#FF5722] transition-colors flex items-center"
                 >
                   <Twitter className="h-4 w-4 mr-2" />
                   @jamm.qr
@@ -75,7 +72,7 @@ const Footer = () => {
                   href="https://instagram.com/jamm.qr" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-gray-600 hover:text-primary transition-colors flex items-center"
+                  className="text-gray-600 hover:text-[#FF5722] transition-colors flex items-center"
                 >
                   <Instagram className="h-4 w-4 mr-2" />
                   @jamm.qr
@@ -97,7 +94,7 @@ const Footer = () => {
             </p>
             <div className="flex items-center mt-4 md:mt-0">
               <span className="text-gray-600 text-sm">Hecho con</span>
-              <Heart className="h-4 w-4 mx-1 text-primary" />
+              <Heart className="h-4 w-4 mx-1" style={{ color: '#FF5722' }} />
               <span className="text-gray-600 text-sm">por el equipo de JAMM</span>
             </div>
           </div>

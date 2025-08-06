@@ -50,7 +50,7 @@ function Events() {
     return (
       <div className="bg-[#2a2a2a]">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ae4a]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ function Events() {
               <Link
                 key={event.id}
                 to={`/evento/${event.id}`}
-                className="bg-[#1f1f1f] rounded-lg shadow-lg overflow-hidden hover:ring-2 hover:ring-[#56ae4a] transition-all duration-200"
+                className="bg-[#1f1f1f] rounded-lg shadow-lg overflow-hidden hover:ring-2 hover:ring-[#FF5722] transition-all duration-200"
               >
                 <div className="relative pb-[56.25%]">
                   <img
@@ -93,17 +93,17 @@ function Events() {
                   
                   <div className="space-y-2 text-sm text-gray-300">
                     <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-[#56ae4a]" />
+                      <Calendar className="h-4 w-4 mr-2" style={{ color: '#FF5722' }}/>
                       <span>
                         {format(new Date(event.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}
                       </span>
                     </div>
                     <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-[#56ae4a]" />
+                      <Clock className="h-4 w-4 mr-2" style={{ color: '#FF5722' }} />
                       <span>{event.time}</span>
                     </div>
                     <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-[#56ae4a]" />
+                      <MapPin className="h-4 w-4 mr-2" style={{ color: '#FF5722' }} />
                       <span>{event.location}</span>
                     </div>
                   </div>

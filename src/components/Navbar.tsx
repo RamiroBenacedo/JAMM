@@ -57,7 +57,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-4xl font-bold text-gray-900">JAMM</span>
+            <span className="text-4xl font-bold" style={{ fontFamily: 'Gasoek One', color: '#232323' }}>JAMM</span>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -66,13 +66,14 @@ const Navbar = () => {
                 <Link 
                   to="/crear-evento" 
                   className="primary-button"
+                  style={{ background: '#232323', color: 'white' }}
                 >
                   Crear Evento
                 </Link>
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center text-gray-600 hover:text-primary focus:outline-none"
+                    className="flex items-center text-[#232323] hover:text-opacity-80 focus:outline-none transition-colors"
                   >
                     <UserCircle className="h-6 w-6" />
                   </button>
@@ -138,6 +139,7 @@ const Navbar = () => {
               <Link
                 to="/ingresar"
                 className="primary-button"
+                style={{ background: '#232323', color: 'white' }}
               >
                 Ingresar
               </Link>

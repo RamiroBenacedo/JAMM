@@ -6,13 +6,13 @@ export default {
       colors: {
         background: '#2a2a2a',
         card: '#111111',
-        primary: '#56ae4a',
-        'primary-light': '#68c95b',
+        primary: '#FF5722',
+        'primary-light': '#ff784d',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 };

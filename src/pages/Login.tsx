@@ -103,14 +103,13 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <Ticket className="h-12 w-12 text-primary" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+          <h2 className="mt-6 text-center text-3xl font-normal text-white" style={{ fontFamily: 'Anton' }}>
             Inicia sesión en tu cuenta
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
+          <p className="mt-2 text-center text-sm text-gray-400" style={{ fontFamily: 'SF Pro' }}>
             ¿No tienes una cuenta?{' '}
-            <Link to="/registro" className="font-medium text-primary hover:text-primary-light">
+            <Link to="/registro" className="font-medium text-[#FF5722] hover:text-opacity-90 transition-colors">
               Regístrate
             </Link>
           </p>
@@ -134,8 +133,9 @@ const Login = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-400 text-white rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm bg-[#1f1f1f]"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-400 text-white rounded-t-md focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722] focus:z-10 sm:text-sm bg-[#1f1f1f]"
                 placeholder="Email"
+                style={{ fontFamily: 'SF Pro' }}
               />
             </div>
             <div>
@@ -150,13 +150,14 @@ const Login = () => {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-400 text-white rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm bg-[#1f1f1f]"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-400 text-white rounded-b-md focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722] focus:z-10 sm:text-sm bg-[#1f1f1f]"
                 placeholder="Contraseña"
+                style={{ fontFamily: 'SF Pro' }}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between" style={{ fontFamily: 'SF Pro' }}>
             <div className="flex items-center">
               <input
                 id="remember"
@@ -164,7 +165,7 @@ const Login = () => {
                 type="checkbox"
                 checked={formData.remember}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary focus:ring-primary border-gray-700 rounded bg-[#1f1f1f]"
+                className="h-4 w-4 text-[#FF5722] focus:ring-[#FF5722] border-gray-700 rounded bg-[#1f1f1f]"
               />
               <label htmlFor="remember" className="ml-2 block text-sm text-gray-300">
                 Recordarme
@@ -172,7 +173,7 @@ const Login = () => {
             </div>
 
             <div className="text-sm">
-              <Link to="/recuperar-password" className="font-medium text-primary hover:text-primary-light">
+              <Link to="/recuperar-password" className="font-medium text-[#FF5722] hover:text-opacity-90 transition-colors">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
@@ -182,7 +183,8 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#FF5722] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF5722] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              style={{ fontFamily: 'SF Pro' }}
             >
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>

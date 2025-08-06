@@ -246,42 +246,47 @@ const MisEventos: React.FC = () => {
   );
 
   return (
-    <div className="bg-[#2a2a2a] text-white min-h-screen py-10">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center">Mis Eventos</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-[#1f1f1f] p-4 rounded border border-gray-700">
-            <p className="text-sm text-gray-400">Total Entradas Confirmadas</p>
-            <p className="text-2xl font-bold">{totals.totalConfirmed}</p>
+    <div className="bg-[#2a2a2a] text-white min-h-screen py-6 lg:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <h1 className="text-2xl lg:text-3xl font-bold mb-6 lg:mb-8 text-center">Mis Eventos</h1>
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-6 mb-6 lg:mb-8">
+          <div className="bg-[#1f1f1f] p-3 lg:p-4 rounded-lg border border-gray-700">
+            <p className="text-xs lg:text-sm text-gray-400">Total Entradas Confirmadas</p>
+            <p className="text-lg lg:text-2xl font-bold mt-1">{totals.totalConfirmed}</p>
           </div>
-          <div className="bg-[#1f1f1f] p-4 rounded border border-gray-700">
-            <p className="text-sm text-gray-400">Entradas Gratuitas Emitidas</p>
-            <p className="text-2xl font-bold">{totals.ticketsFree}</p>
+          <div className="bg-[#1f1f1f] p-3 lg:p-4 rounded-lg border border-gray-700">
+            <p className="text-xs lg:text-sm text-gray-400">Entradas Gratuitas</p>
+            <p className="text-lg lg:text-2xl font-bold mt-1">{totals.ticketsFree}</p>
           </div>
-          <div className="bg-[#1f1f1f] p-4 rounded border border-gray-700">
-            <p className="text-sm text-gray-400">Entradas Pagas Confirmadas</p>
-            <p className="text-2xl font-bold">{totals.ticketsPaid}</p>
+          <div className="bg-[#1f1f1f] p-3 lg:p-4 rounded-lg border border-gray-700">
+            <p className="text-xs lg:text-sm text-gray-400">Entradas Pagas</p>
+            <p className="text-lg lg:text-2xl font-bold mt-1">{totals.ticketsPaid}</p>
           </div>
-
-          <div className="bg-[#1f1f1f] p-4 rounded border border-gray-700">
-            <p className="text-sm text-gray-400">Ventas Totales</p>
-            <p className="text-2xl font-bold">${totals.totalSales.toFixed(2)}</p>
+          <div className="bg-[#1f1f1f] p-3 lg:p-4 rounded-lg border border-gray-700">
+            <p className="text-xs lg:text-sm text-gray-400">Ventas Totales</p>
+            <p className="text-lg lg:text-2xl font-bold mt-1">${totals.totalSales.toFixed(2)}</p>
           </div>
-          <div className="bg-[#1f1f1f] p-4 rounded border border-gray-700">
-            <p className="text-sm text-gray-400">Eventos Asociados</p>
-            <p className="text-2xl font-bold">{totals.totalEvents}</p>
+          <div className="bg-[#1f1f1f] p-3 lg:p-4 rounded-lg border border-gray-700">
+            <p className="text-xs lg:text-sm text-gray-400">Eventos Asociados</p>
+            <p className="text-lg lg:text-2xl font-bold mt-1">{totals.totalEvents}</p>
           </div>
         </div>
 
-        {/* Gráfico */}
-        <div className="bg-[#1f1f1f] p-6 rounded border border-gray-700 mb-8">
-          <div className="flex justify-between mb-4">
-            <h2 className="text-xl font-semibold">Análisis de Ventas</h2>
-            <div className="flex space-x-2">
+        {/* Chart Section */}
+        <div className="bg-[#1f1f1f] p-4 lg:p-6 rounded-lg border border-gray-700 mb-6 lg:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <h2 className="text-lg lg:text-xl font-semibold">Análisis de Ventas Totales</h2>
+            <div className="flex gap-2">
               {(['days', 'months', 'events'] as const).map(m => (
                 <button
                   key={m}
-                  className={`px-4 py-1 rounded ${timeframe === m ? 'bg-[#56ae4a]' : 'bg-[#111] text-gray-300'}`}
+                  className={`px-3 lg:px-4 py-1.5 rounded-lg text-sm transition-colors ${
+                    timeframe === m 
+                      ? 'bg-[#FF5722] text-white' 
+                      : 'bg-[#111] text-gray-300 hover:bg-opacity-80'
+                  }`}
                   onClick={() => setTimeframe(m)}
                 >
                   {m === 'days' ? 'Días' : m === 'months' ? 'Meses' : 'Eventos'}
@@ -289,54 +294,104 @@ const MisEventos: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="h-[400px]">
+          <div className="h-[300px] lg:h-[400px]">
             <ResponsiveContainer>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="date" stroke="#9CA3AF" />
-                <YAxis yAxisId="left" stroke="#9CA3AF" tickFormatter={v => `$${v}`} />
-                <YAxis yAxisId="right" orientation="right" stroke="#9CA3AF" />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" dataKey="sales" type="monotone" name="Ventas ($)" />
-                <Line yAxisId="right" dataKey="tickets" type="monotone" name="Tickets" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="#9CA3AF"
+                  tick={{ fontSize: 12 }}
+                  angle={-15}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis 
+                  yAxisId="left" 
+                  stroke="#9CA3AF" 
+                  tickFormatter={v => `$${v}`}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  stroke="#9CA3AF"
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f1f1f',
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{
+                    paddingTop: '20px'
+                  }}
+                />
+                <Line 
+                  yAxisId="left" 
+                  dataKey="sales" 
+                  type="monotone" 
+                  name="Ventas ($)"
+                  stroke="#FF5722"
+                  strokeWidth={2}
+                />
+                <Line 
+                  yAxisId="right" 
+                  dataKey="tickets" 
+                  type="monotone" 
+                  name="Tickets"
+                  stroke="#9333EA"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Tabla de eventos */}
-        <div className="bg-[#1f1f1f] rounded border border-gray-700 overflow-x-auto">
-          <table className="w-full text-sm text-center">
-            <thead className="bg-[#111] text-gray-400 uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Evento</th>
-                <th className="p-4">Ventas</th>
-                <th className="p-4">Tickets Pagos</th>
-                <th className="p-4">Tickets Emitidos</th>
-                <th className="p-4">Total Confirmados</th>
-                <th className="p-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eventStats.length === 0 ? (
-                <tr><td colSpan={6} className="p-4 text-gray-500">No hay eventos para mostrar.</td></tr>
-              ) : eventStats.map(e => (
-                <tr key={e.id} className="border-t border-gray-700 hover:bg-[#2a2a2a]">
-                  <td className="p-4">{e.name}</td>
-                  <td className="p-4">${e.totalSales.toFixed(2)}</td>
-                  <td className="p-4">{e.ticketsPaid}</td>
-                  <td className="p-4">{e.ticketsFree}</td>
-                  <td className="p-4">{e.totalConfirmed}</td>
-                  <td className="p-4">
-                    <button className="text-[#56ae4a] hover:underline" onClick={() => handleVerDetalles(e.id)}>
-                      Ver detalles
-                    </button>
-                  </td>
+        {/* Events Table */}
+        <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#111] text-gray-400 uppercase tracking-wider">
+                <tr>
+                  <th className="px-4 py-3 text-left">Evento</th>
+                  <th className="px-4 py-3 text-right">Ventas</th>
+                  <th className="px-4 py-3 text-right">Tickets Pagos</th>
+                  <th className="px-4 py-3 text-right">Tickets Gratis</th>
+                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="px-4 py-3 text-center">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {eventStats.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-gray-500 text-center">
+                      No hay eventos para mostrar.
+                    </td>
+                  </tr>
+                ) : eventStats.map(e => (
+                  <tr key={e.id} className="hover:bg-[#2a2a2a] transition-colors">
+                    <td className="px-4 py-3 text-left">{e.name}</td>
+                    <td className="px-4 py-3 text-right">${e.totalSales.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right">{e.ticketsPaid}</td>
+                    <td className="px-4 py-3 text-right">{e.ticketsFree}</td>
+                    <td className="px-4 py-3 text-right">{e.totalConfirmed}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button 
+                        className="text-[#FF5722] hover:text-opacity-80 transition-colors font-medium"
+                        onClick={() => handleVerDetalles(e.id)}
+                      >
+                        Ver detalles
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

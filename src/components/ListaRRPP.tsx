@@ -218,35 +218,35 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
   }
 
   return (
-    <div className="mt-10">
-      <h2 className="text-xl font-bold mb-4 text-white">RRPP Guardados</h2>
+    <div className="mt-6 lg:mt-10">
+      <h2 className="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-white">RRPP Guardados</h2>
       
       {/* Versión para pantallas grandes */}
       <div className="hidden md:block">
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-x-auto rounded-lg">
           <table className="w-full text-left text-white border border-gray-700 min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-800">
               <tr>
-                <th className="p-3">Nombre</th>
-                <th className="p-3">Instagram</th>
-                <th className="p-3">Teléfono</th>
-                <th className="p-3">Código</th>
-                <th className="p-3">Acción</th>
-                <th className="p-3">Eliminar</th>
+                <th className="px-4 py-3">Nombre</th>
+                <th className="px-4 py-3">Instagram</th>
+                <th className="px-4 py-3">Teléfono</th>
+                <th className="px-4 py-3">Código</th>
+                <th className="px-4 py-3">Acción</th>
+                <th className="px-4 py-3">Eliminar</th>
               </tr>
             </thead>
             <tbody>
               {rrpps.map((rrpp) => (
                 <React.Fragment key={rrpp.id}>
-                  <tr className="border-t border-gray-700">
-                    <td className="p-3">{rrpp.nombre}</td>
-                    <td className="p-3">{rrpp.redes}</td>
-                    <td className="p-3">{rrpp.telefono}</td>
-                    <td className="p-3">{rrpp.codigo}</td>
-                    <td className="p-3">
+                  <tr className="border-t border-gray-700 hover:bg-gray-800/50 transition-colors">
+                    <td className="px-4 py-3">{rrpp.nombre}</td>
+                    <td className="px-4 py-3">{rrpp.redes}</td>
+                    <td className="px-4 py-3">{rrpp.telefono}</td>
+                    <td className="px-4 py-3">{rrpp.codigo}</td>
+                    <td className="px-4 py-3">
                       <button
                         onClick={() => toggleRow(rrpp.codigo)}
-                        className="flex items-center gap-1 hover:text-blue-400 transition"
+                        className="flex items-center gap-1 hover:text-[#FF5722] transition-colors"
                         title="Ver detalles"
                       >
                         {expandedRows[rrpp.codigo] ? (
@@ -256,10 +256,10 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
                         )}
                       </button>
                     </td>
-                    <td className="p-3">
+                    <td className="px-4 py-3">
                       <button
                         onClick={() => deleteRRPP(rrpp.id, rrpp.codigo)}
-                        className="flex items-center gap-1 text-red-400 hover:text-red-600 transition"
+                        className="flex items-center gap-1 text-red-400 hover:text-red-600 transition-colors"
                         title="Eliminar RRPP"
                         disabled={loadingDelete[rrpp.codigo]}
                       >
@@ -274,8 +274,8 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
                   {expandedRows[rrpp.codigo] && (
                     <tr className="bg-gray-900 border-t border-gray-700">
                       <td colSpan={6}>
-                        <div className="p-4">
-                          <h3 className="font-bold mb-2">Resumen de Ventas</h3>
+                        <div className="p-4 lg:p-6">
+                          <h3 className="font-bold mb-4 text-lg">Resumen de Ventas</h3>
                           
                           {ventasPorRRPP[rrpp.codigo]?.cantidad === 0 || 
                           !ventasPorRRPP[rrpp.codigo] ? (
@@ -284,7 +284,7 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
                             </div>
                           ) : (
                             <>
-                              <div className="grid grid-cols-5 gap-4 mb-4 font-semibold border-b pb-2">
+                              <div className="grid grid-cols-5 gap-4 mb-4 font-semibold border-b border-gray-700 pb-3">
                                 <div>Tipo de Ticket</div>
                                 <div>Evento</div>
                                 <div className="text-right">Precio Unitario</div>
@@ -293,7 +293,7 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
                               </div>
                               {ventasPorRRPP[rrpp.codigo]?.ventasPorTipo && 
                                 Object.entries(ventasPorRRPP[rrpp.codigo].ventasPorTipo).map(([tipoId, venta]) => (
-                                <div key={tipoId} className="grid grid-cols-5 gap-4 py-2 border-b border-gray-700">
+                                <div key={tipoId} className="grid grid-cols-5 gap-4 py-3 border-b border-gray-700">
                                   <div>{venta.type}</div>
                                   <div>{venta.eventName}</div>
                                   <div className="text-right">
@@ -314,18 +314,22 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
                           )}
 
                           {eventosDelUsuario.length > 0 && (
-                            <div className="mt-6">
-                              <h4 className="font-semibold mb-3">Generar enlaces RRPP</h4>
+                            <div className="mt-8">
+                              <h4 className="font-semibold mb-4 text-lg">Generar enlaces RRPP</h4>
                               <div className="flex flex-wrap gap-3">
                                 {eventosDelUsuario.map(evento => (
-                                  <div key={evento.id} className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-md">
+                                  <div key={evento.id} className="flex items-center gap-2 bg-gray-800 px-4 py-3 rounded-lg">
                                     <span>{evento.name}</span>
                                     <button
                                       onClick={() => generateRRPPUrl(rrpp.codigo, evento.id)}
-                                      className={`flex items-center gap-1 px-2 py-1 rounded transition ${copiedId === `${rrpp.codigo}-${evento.id}` ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                      className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                                        copiedId === `${rrpp.codigo}-${evento.id}` 
+                                          ? 'bg-green-600 hover:bg-green-700' 
+                                          : 'bg-[#FF5722] hover:bg-opacity-90'
+                                      }`}
                                       title={`Copiar enlace para ${evento.name}`}
                                     >
-                                      <FiLink size={14} />
+                                      <FiLink size={16} />
                                       {copiedId === `${rrpp.codigo}-${evento.id}` ? 'Copiado!' : 'Copiar'}
                                     </button>
                                   </div>
@@ -347,133 +351,147 @@ function ListaRRPP({ userId, refreshFlag }: ListaRRPPProps) {
       {/* Versión para móviles */}
       <div className="md:hidden space-y-4">
         {rrpps.map((rrpp) => (
-          <div key={rrpp.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div>
-                <p className="text-gray-400 text-sm">Nombre</p>
-                <p>{rrpp.nombre}</p>
+          <div key={rrpp.id} className="bg-gray-800 rounded-lg overflow-hidden">
+            <div className="p-4">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-gray-400 text-sm">Nombre</p>
+                  <p className="text-white font-medium">{rrpp.nombre}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Instagram</p>
+                  <p className="text-white">{rrpp.redes}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Teléfono</p>
+                  <p className="text-white">{rrpp.telefono}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Código</p>
+                  <p className="text-white font-medium">{rrpp.codigo}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-gray-400 text-sm">Instagram</p>
-                <p>{rrpp.redes}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm">Teléfono</p>
-                <p>{rrpp.telefono}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm">Código</p>
-                <p>{rrpp.codigo}</p>
-              </div>
-            </div>
 
-            <div className="flex justify-between mt-2">
-              <button
-                onClick={() => toggleRow(rrpp.codigo)}
-                className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition"
-              >
-                {expandedRows[rrpp.codigo] ? (
-                  <>
-                    <FiChevronUp className="text-lg" />
-                    <span>Ocultar detalles</span>
-                  </>
-                ) : (
-                  <>
-                    <FiChevronDown className="text-lg" />
-                    <span>Ver detalles</span>
-                  </>
-                )}
-              </button>
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-700">
+                <button
+                  onClick={() => toggleRow(rrpp.codigo)}
+                  className="flex items-center gap-2 text-[#FF5722] hover:text-opacity-90 transition-colors"
+                >
+                  {expandedRows[rrpp.codigo] ? (
+                    <>
+                      <FiChevronUp className="text-xl" />
+                      <span className="text-sm font-medium">Ocultar detalles</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiChevronDown className="text-xl" />
+                      <span className="text-sm font-medium">Ver detalles</span>
+                    </>
+                  )}
+                </button>
 
-              <button
-                onClick={() => deleteRRPP(rrpp.id, rrpp.codigo)}
-                className="flex items-center gap-1 text-red-400 hover:text-red-300 transition"
-                disabled={loadingDelete[rrpp.codigo]}
-              >
-                {loadingDelete[rrpp.codigo] ? (
-                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <FiTrash2 className="text-lg" />
-                    <span>Eliminar</span>
-                  </>
-                )}
-              </button>
+                <button
+                  onClick={() => deleteRRPP(rrpp.id, rrpp.codigo)}
+                  className="flex items-center gap-2 text-red-400 hover:text-red-300 transition-colors"
+                  disabled={loadingDelete[rrpp.codigo]}
+                >
+                  {loadingDelete[rrpp.codigo] ? (
+                    <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <FiTrash2 className="text-xl" />
+                      <span className="text-sm font-medium">Eliminar</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {expandedRows[rrpp.codigo] && (
-              <div className="mt-4 pt-4 border-t border-gray-700">
-                <h3 className="font-bold mb-2">Resumen de Ventas</h3>
-                
-                {ventasPorRRPP[rrpp.codigo]?.cantidad === 0 || 
-                !ventasPorRRPP[rrpp.codigo] ? (
-                  <div className="text-gray-400 italic py-2">
-                    Este RRPP no tiene tickets confirmados
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-3">
+              <div className="border-t border-gray-700 bg-gray-900">
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-4">Resumen de Ventas</h3>
+                  
+                  {ventasPorRRPP[rrpp.codigo]?.cantidad === 0 || 
+                  !ventasPorRRPP[rrpp.codigo] ? (
+                    <div className="text-gray-400 italic py-2">
+                      Este RRPP no tiene tickets confirmados
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
                       {ventasPorRRPP[rrpp.codigo]?.ventasPorTipo && 
                         Object.entries(ventasPorRRPP[rrpp.codigo].ventasPorTipo).map(([tipoId, venta]) => (
-                        <div key={tipoId} className="bg-gray-900 p-3 rounded-md">
-                          <div className="grid grid-cols-2 gap-2">
+                        <div key={tipoId} className="bg-gray-800 p-4 rounded-lg">
+                          <div className="space-y-2">
                             <div>
-                              <p className="text-gray-400 text-sm">Tipo</p>
-                              <p>{venta.type}</p>
+                              <p className="text-gray-400 text-sm">Tipo de Ticket</p>
+                              <p className="text-white">{venta.type}</p>
                             </div>
                             <div>
                               <p className="text-gray-400 text-sm">Evento</p>
-                              <p>{venta.eventName}</p>
+                              <p className="text-white">{venta.eventName}</p>
                             </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">Precio Unitario</p>
-                              <p>${(venta.total / venta.cantidad).toFixed(2)}</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-gray-400 text-sm">Precio Unitario</p>
+                                <p className="text-white">${(venta.total / venta.cantidad).toFixed(2)}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-400 text-sm">Cantidad</p>
+                                <p className="text-white">{venta.cantidad}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-gray-400 text-sm">Cantidad</p>
-                              <p>{venta.cantidad}</p>
+                            <div className="pt-2 mt-2 border-t border-gray-700">
+                              <p className="text-gray-400 text-sm">Total</p>
+                              <p className="text-white font-medium">${venta.total.toFixed(2)}</p>
                             </div>
-                          </div>
-                          <div className="mt-2 pt-2 border-t border-gray-700">
-                            <p className="text-gray-400 text-sm">Total</p>
-                            <p className="font-medium">${venta.total.toFixed(2)}</p>
                           </div>
                         </div>
                       ))}
-                    </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-700">
-                      <div className="flex justify-between">
-                        <span className="font-bold">Total General</span>
-                        <div className="text-right">
-                          <p>{ventasPorRRPP[rrpp.codigo]?.cantidad || 0} tickets</p>
-                          <p className="font-bold">${ventasPorRRPP[rrpp.codigo]?.total?.toFixed(2) || '0.00'}</p>
+                      <div className="bg-gray-800 p-4 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-gray-400 text-sm">Total General</p>
+                            <p className="text-white font-bold mt-1">
+                              ${ventasPorRRPP[rrpp.codigo]?.total?.toFixed(2) || '0.00'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-gray-400 text-sm">Tickets Vendidos</p>
+                            <p className="text-white font-bold mt-1">
+                              {ventasPorRRPP[rrpp.codigo]?.cantidad || 0}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
+                  )}
 
-                {eventosDelUsuario.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-3">Generar enlaces RRPP</h4>
-                    <div className="space-y-2">
-                      {eventosDelUsuario.map(evento => (
-                        <div key={evento.id} className="flex justify-between items-center bg-gray-900 px-3 py-2 rounded-md">
-                          <span className="truncate">{evento.name}</span>
-                          <button
-                            onClick={() => generateRRPPUrl(rrpp.codigo, evento.id)}
-                            className={`flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded transition ${copiedId === `${rrpp.codigo}-${evento.id}` ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
-                            title={`Copiar enlace para ${evento.name}`}
-                          >
-                            <FiLink size={14} />
-                            {copiedId === `${rrpp.codigo}-${evento.id}` ? 'Copiado!' : 'Copiar'}
-                          </button>
-                        </div>
-                      ))}
+                  {eventosDelUsuario.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold text-lg mb-4">Enlaces RRPP</h4>
+                      <div className="space-y-3">
+                        {eventosDelUsuario.map(evento => (
+                          <div key={evento.id} className="bg-gray-800 p-4 rounded-lg">
+                            <p className="text-white mb-3 font-medium">{evento.name}</p>
+                            <button
+                              onClick={() => generateRRPPUrl(rrpp.codigo, evento.id)}
+                              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-colors ${
+                                copiedId === `${rrpp.codigo}-${evento.id}` 
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-[#FF5722] hover:bg-opacity-90'
+                              }`}
+                            >
+                              <FiLink size={18} />
+                              {copiedId === `${rrpp.codigo}-${evento.id}` ? 'Copiado!' : 'Copiar Enlace'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </div>

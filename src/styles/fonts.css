@@ -1,0 +1,34 @@
+/* Anton Font */
+@font-face {
+  font-family: 'Anton';
+  src: url('/fonts/Anton-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Gasoek One Font */
+@font-face {
+  font-family: 'Gasoek One';
+  src: url('/fonts/GasoekOne-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SF Pro Display */
+@font-face {
+  font-family: 'SF Pro';
+  src: local('SF Pro Display'), local('SF Pro');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: local('SF Pro Display Light'), local('SF Pro Light');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+} 

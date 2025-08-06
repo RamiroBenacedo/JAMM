@@ -299,11 +299,11 @@ const CreateEvent = () => {
               >
                 <div className={`
                   absolute bottom-0 left-0 w-full h-0.5
-                  ${activeTab === index ? 'bg-[#56ae4a]' : 'bg-transparent'}
+                  ${activeTab === index ? 'bg-[#FF5722]' : 'bg-transparent'}
                 `} />
                 <tab.icon className={`
                   w-6 h-6 mx-auto mb-2
-                  ${activeTab === index ? 'text-[#56ae4a]' : 'text-gray-400'}
+                  ${activeTab === index ? 'text-[#FF5722]' : 'text-gray-400'}
                 `} />
                 <div className={`
                   text-sm font-medium
@@ -346,7 +346,7 @@ const CreateEvent = () => {
                       <div className="space-y-1 text-center">
                         <Upload className="mx-auto h-12 w-12 text-gray-400" />
                         <div className="flex text-sm text-gray-400">
-                          <label className="relative cursor-pointer rounded-md font-medium text-[#56ae4a] hover:text-[#68c95b] focus-within:outline-none">
+                          <label className="relative cursor-pointer rounded-md font-medium text-[#FF5722] hover:text-opacity-80 focus-within:outline-none">
                             <span>Sube una imagen</span>
                             <input
                               type="file"
@@ -369,7 +369,7 @@ const CreateEvent = () => {
                   <label className="block text-sm font-medium text-gray-200">Nombre del evento</label>
                   <input
                     type="text"
-                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                       errors.name ? 'border-red-500' : ''
                     }`}
                     value={eventData.name}
@@ -382,7 +382,7 @@ const CreateEvent = () => {
                   <label className="block text-sm font-medium text-gray-200">Descripción</label>
                   <textarea
                     rows={4}
-                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                       errors.description ? 'border-red-500' : ''
                     }`}
                     value={eventData.description}
@@ -395,7 +395,7 @@ const CreateEvent = () => {
                   <label className="block text-sm font-medium text-gray-200">Ubicación</label>
                   <input
                     type="text"
-                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                       errors.location ? 'border-red-500' : ''
                     }`}
                     value={eventData.location}
@@ -410,7 +410,7 @@ const CreateEvent = () => {
                     <label className="block text-sm font-medium text-gray-200">Fecha</label>
                     <input
                       type="date"
-                      className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                      className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                         errors.date ? 'border-red-500' : ''
                       }`}
                       value={eventData.date}
@@ -423,7 +423,7 @@ const CreateEvent = () => {
                     <label className="block text-sm font-medium text-gray-200">Hora</label>
                     <input
                       type="time"
-                      className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                      className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                         errors.time ? 'border-red-500' : ''
                       }`}
                       value={eventData.time}
@@ -443,12 +443,12 @@ const CreateEvent = () => {
                   {eventData.tickets.length > 0 && (
                     <div className="mt-4 space-y-4">
                       {eventData.tickets.map((ticket, index) => (
-                        <div key={index} className="flex items-start justify-between p-4 bg-[#1f1f1f] rounded-lg border border-gray-600 hover:border-[#56ae4a] transition-colors duration-200">
+                        <div key={index} className="flex items-start justify-between p-4 bg-[#1f1f1f] rounded-lg border border-gray-600 hover:border-[#FF5722] transition-colors duration-200">
                           <div>
                             <p className="text-white font-medium">{ticket.type}</p>
                             <p className="text-gray-400 text-sm mt-1">{ticket.description}</p>
                             <div className="mt-2 flex items-center space-x-4">
-                              <span className="text-[#56ae4a] font-medium">${ticket.price}</span>
+                              <span className="text-[#FF5722] font-medium">${ticket.price}</span>
                               <span className="text-gray-400">|</span>
                               <span className="text-gray-300">{ticket.quantity} disponibles</span>
                             </div>
@@ -470,7 +470,7 @@ const CreateEvent = () => {
                         <label className="block text-sm font-medium text-gray-200">Tipo de entrada</label>
                         <input
                           type="text"
-                          className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                          className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                             ticketErrors.type ? 'border-red-500' : ''
                           }`}
                           value={newTicket.type}
@@ -484,7 +484,7 @@ const CreateEvent = () => {
                         <label className="block text-sm font-medium text-gray-200">Descripción</label>
                         <textarea
                           rows={2}
-                          className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                          className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                             ticketErrors.description ? 'border-red-500' : ''
                           }`}
                           value={newTicket.description}
@@ -504,7 +504,7 @@ const CreateEvent = () => {
                             <input
                               type="number"
                               min="0"
-                              className={`pl-7 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                              className={`pl-7 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                                 ticketErrors.price ? 'border-red-500' : ''
                               }`}
                               value={newTicket.price}
@@ -519,7 +519,7 @@ const CreateEvent = () => {
                           <input
                             type="number"
                             min="1"
-                            className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                            className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                               ticketErrors.quantity ? 'border-red-500' : ''
                             }`}
                             value={newTicket.quantity}
@@ -532,7 +532,7 @@ const CreateEvent = () => {
                       <div className="flex space-x-4 pt-4">
                         <button
                           onClick={handleAddTicket}
-                          className="flex-1 bg-[#56ae4a] text-white px-4 py-2 rounded-lg hover:bg-[#68c95b] transition-colors duration-200"
+                          className="flex-1 bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                         >
                           Agregar
                         </button>
@@ -551,7 +551,7 @@ const CreateEvent = () => {
                   ) : (
                     <div className="mt-6">
                       <button
-                        className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#56ae4a] hover:bg-[#68c95b] transition-colors duration-200"
+                        className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#FF5722] hover:bg-opacity-90 transition-colors duration-200"
                         onClick={() => setShowTicketForm(true)}
                       >
                         + Agregar tipo de entrada
@@ -572,7 +572,7 @@ const CreateEvent = () => {
                   <input
                     type="number"
                     min="1"
-                    className="mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white"
+                    className="mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white"
                     value={eventData.maxTicketsPerUser}
                     onChange={(e) => setEventData({...eventData, maxTicketsPerUser: parseInt(e.target.value)})}
                   />
@@ -584,7 +584,7 @@ const CreateEvent = () => {
                   </label>
                   <input
                     type="datetime-local"
-                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#56ae4a] focus:ring-[#56ae4a] text-white ${
+                    className={`mt-1 block w-full rounded-lg border-gray-600 bg-[#2a2a2a] shadow-sm focus:border-[#FF5722] focus:ring-[#FF5722] text-white ${
                       errors.salesEndDate ? 'border-red-500' : ''
                     }`}
                     value={eventData.salesEndDate}
@@ -597,7 +597,7 @@ const CreateEvent = () => {
                   <div className="flex items-center h-5">
                     <input
                       type="checkbox"
-                      className={`focus:ring-[#56ae4a] h-4 w-4 text-[#56ae4a] border-gray-600 rounded bg-[#2a2a2a] checked:bg-[#56ae4a] ${
+                      className={`focus:ring-[#FF5722] h-4 w-4 text-[#FF5722] border-gray-600 rounded bg-[#2a2a2a] checked:bg-[#FF5722] ${
                         errors.terms ? 'border-red-500' : ''
                       }`}
                       checked={eventData.termsAccepted}
@@ -610,7 +610,7 @@ const CreateEvent = () => {
                       <button
                         type="button"
                         onClick={() => setShowTermsModal(true)}
-                        className="text-[#56ae4a] hover:text-[#68c95b] underline focus:outline-none"
+                        className="text-[#FF5722] hover:text-opacity-80 underline focus:outline-none"
                       >
                         términos y condiciones
                       </button>
@@ -630,7 +630,7 @@ const CreateEvent = () => {
               <button
                 onClick={activeTab === 2 ? handleSubmit : handleNext}
                 disabled={loading}
-                className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-[#56ae4a] hover:bg-[#68c95b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#56ae4a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-[#FF5722] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF5722] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -666,7 +666,7 @@ const CreateEvent = () => {
             <button
               type="button"
               onClick={() => setShowTermsModal(false)}
-              className="px-4 py-2 bg-[#56ae4a] text-white rounded-lg hover:bg-[#68c95b] focus:outline-none focus:ring-2 focus:ring-[#56ae4a] focus:ring-offset-2 focus:ring-offset-[#1f1f1f]"
+              className="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[#FF5722] focus:ring-offset-2 focus:ring-offset-[#1f1f1f]"
             >
               Cerrar
             </button>

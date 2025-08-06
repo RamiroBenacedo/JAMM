@@ -203,7 +203,7 @@ const Profile = () => {
     return (
       <div className="bg-[#2a2a2a]">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ae4a]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
         </div>
       </div>
     );
@@ -216,7 +216,7 @@ const Profile = () => {
           <div className="px-4 py-5 sm:px-6">
             <div className="flex flex-col space-y-2">
               <div className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-[#56ae4a]" />
+                <User className="h-5 w-5 text-[#FF5722]" />
                 <h2 className="text-2xl font-bold text-white">{userData.full_name}</h2>
               </div>
               <div className="flex items-center space-x-2 text-gray-400">
@@ -239,7 +239,7 @@ const Profile = () => {
                   <button
                     className={`${
                       activeTab === 'tickets'
-                        ? 'border-[#56ae4a] text-[#56ae4a]'
+                        ? 'border-white text-white'
                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                     } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     onClick={() => setActiveTab('tickets')}
@@ -250,7 +250,7 @@ const Profile = () => {
                   <button
                     className={`${
                       activeTab === 'events'
-                        ? 'border-[#56ae4a] text-[#56ae4a]'
+                        ? 'border-white text-white'
                         : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                     } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     onClick={() => setActiveTab('events')}
@@ -308,7 +308,7 @@ const Profile = () => {
                               <p className="mb-1">{ticket.ticket_type.event.location}</p>
                               <p className="mb-1">Tipo: {ticket.ticket_type.type}</p>
                               <p className="mb-1">Cantidad: {ticket.quantity}</p>
-                              <p className="text-[#56ae4a]">Total: ${ticket.total_price}</p>
+                              <p className="text-[#FFFFFF]">Total: ${ticket.total_price}</p>
                             </div>
                     
                             <div className="mt-4 flex justify-center bg-[#1f1f1f] p-4 rounded-lg">
@@ -341,7 +341,7 @@ const Profile = () => {
                       <p className="text-gray-400">No has creado ningún evento todavía.</p>
                       <Link
                         to="/crear-evento"
-                        className="mt-4 inline-block bg-[#56ae4a] text-white px-4 py-2 rounded-lg hover:bg-[#68c95b]"
+                        className="mt-4 inline-block bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
                       >
                         Crear mi primer evento
                       </Link>
@@ -391,7 +391,7 @@ const Profile = () => {
                                 <div className="flex space-x-4">
                                   <Link
                                     to={`/evento/${event.id}`}
-                                    className="text-[#56ae4a] hover:text-[#68c95b]"
+                                    className="text-[#FF5722] hover:text-opacity-80 transition-colors"
                                   >
                                     Ver detalles
                                   </Link>

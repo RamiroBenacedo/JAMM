@@ -1,3 +1,6 @@
+/* Import font declarations */
+@import './styles/fonts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,7 +44,6 @@ body {
 
 .primary-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(86, 174, 74, 0.4);
 }
 
 .secondary-button {
