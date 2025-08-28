@@ -239,6 +239,10 @@ const handleGuestConfirm = async () => {
     setPurchaseError("No hay entradas seleccionadas.");
     return;
   }
+  if (selected.length > 1) {
+    setPurchaseError("Como invitado, seleccioná un solo tipo de entrada por compra.");
+    return;
+  }
 
   const items = selected.map(t => ({
     title:      t.description,
@@ -248,7 +252,8 @@ const handleGuestConfirm = async () => {
   }));
 
   const ticketTypeId = selected[0].id;
-
+  const queryParams = new URLSearchParams(window.location.search);
+  const rrpp = queryParams.get('rrpp') || undefined;
   setPurchasing(true);
   setPurchaseError(null);
 
@@ -267,6 +272,7 @@ const handleGuestConfirm = async () => {
         guestInfo:       guestData,
         event_id:        event!.id,
         ticketTypeId,
+        ...(rrpp && { rrpp }),
         items,
         marketplace_fee: Math.round(calculateTotal() * (event!.marketplace_fee / 100))
       })
@@ -444,8 +450,27 @@ const handleGuestConfirm = async () => {
                   <input placeholder="País" value={guestData.country} onChange={e => setGuestData({...guestData, country: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between gap-3 mt-6">
-                  <button onClick={() => setGuestStep(1)} className="w-full lg:w-auto px-6 py-3 border rounded text-white hover:border-[#FF5722] transition-all order-2 lg:order-1">Anterior</button>
-                  <button onClick={() => setGuestStep(3)} className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all order-1 lg:order-2">Siguiente</button>
+                  <button
+                    onClick={() => setGuestStep(1)}
+                    className="w-full lg:w-auto px-6 py-3 border rounded text-white hover:border-[#FF5722] transition-all order-2 lg:order-1"
+                  >
+                    Anterior
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const { ok, message } = validateGuestData(guestData);
+                      if (!ok) {
+                        setPurchaseError(message);
+                        return;
+                      }
+                      setPurchaseError(null);
+                      setGuestStep(3);
+                    }}
+                    className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all order-1 lg:order-2"
+                  >
+                    Siguiente
+                  </button>
                 </div>
               </>
             )}
