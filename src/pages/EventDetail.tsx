@@ -188,69 +188,108 @@ export default function EventDetail() {
     }
   };
 
+const validateGuestData = (guestData: {
+  nombre: string;
+  apellido: string;
+  idType: string;
+  idNumber: string;
+  email: string;
+  confirmEmail: string;
+  phone: string;
+  country: string;
+}) => {
+  const required = ["nombre","apellido","idType","idNumber","email","confirmEmail","phone","country"] as const;
 
+  for (const k of required) {
+    if (!guestData[k] || String(guestData[k]).trim() === "") {
+      return { ok: false, message: "Por favor, completá todos los campos." };
+    }
+  }
+
+  if (guestData.email.trim() !== guestData.confirmEmail.trim()) {
+    return { ok: false, message: "Los correos no coinciden." };
+  }
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestData.email);
+  if (!emailOk) {
+    return { ok: false, message: "Ingresá un email válido." };
+  }
+
+  const allowedIdTypes = ["DNI","Pasaporte"];
+  if (!allowedIdTypes.includes(guestData.idType)) {
+    return { ok: false, message: "Tipo de identificación inválido." };
+  }
+
+  if (!/^[\d\s+()-]{6,}$/.test(guestData.phone)) {
+    return { ok: false, message: "Ingresá un teléfono válido." };
+  }
+
+  return { ok: true, message: "" };
+};
 
 const handleGuestConfirm = async () => {
-  setPurchasing(true)
+  const { ok, message } = validateGuestData(guestData);
+  if (!ok) {
+    setPurchaseError(message);
+    return;
+  }
+
+  const selected = ticketTypes.filter(t => (ticketQuantities[t.id] || 0) > 0);
+  if (selected.length === 0) {
+    setPurchaseError("No hay entradas seleccionadas.");
+    return;
+  }
+
+  const items = selected.map(t => ({
+    title:      t.description,
+    quantity:   ticketQuantities[t.id]!, // ya validado > 0
+    unit_price: parseFloat((t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)),
+    currency_id:'ARS'
+  }));
+
+  const ticketTypeId = selected[0].id;
+
+  setPurchasing(true);
+  setPurchaseError(null);
+
   try {
-    const items = ticketTypes
-      .filter(t => ticketQuantities[t.id]! > 0)
-      .map(t => ({
-        title:      t.description,
-        quantity:   ticketQuantities[t.id]!,
-        unit_price: parseFloat(
-          (t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)
-        ),
-        currency_id:'ARS'
-      }))
-
-    const ticketTypeId = ticketTypes.find(t => ticketQuantities[t.id]! > 0)?.id
-    if (!ticketTypeId) {
-      setPurchaseError('No hay tipo de ticket seleccionado.')
-      return
-    }
-
-    const resp = await fetch(
-      `${SUPABASE_URL}/functions/v1/swift-task`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey':        ANON_KEY,
-          'Authorization': `Bearer ${ANON_KEY}`
-        },
-        body: JSON.stringify({
-          email:           guestData.email,
-          userId:          null,
-          guest:           true,             // <-- Indica compra por invitado
-          guestInfo:       guestData,
-          event_id:        event!.id,
-          ticketTypeId,
-          items,
-          marketplace_fee: Math.round(
-            calculateTotal() * (event!.marketplace_fee / 100)
-          )
-        })
-      }
-    )
+    const resp = await fetch(`https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/swift-task`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey':        ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`
+      },
+      body: JSON.stringify({
+        email:           guestData.email,
+        userId:          null,
+        guest:           true,
+        guestInfo:       guestData,
+        event_id:        event!.id,
+        ticketTypeId,
+        items,
+        marketplace_fee: Math.round(calculateTotal() * (event!.marketplace_fee / 100))
+      })
+    });
 
     if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: resp.statusText }))
-      console.error('swift-task error', resp.status, err)
-      throw new Error(err.error || `HTTP ${resp.status}`)
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      console.error('swift-task error', resp.status, err);
+      throw new Error(err.error || `HTTP ${resp.status}`);
     }
 
-    const { init_point } = await resp.json()
-    window.location.href = init_point
+    const { init_point } = await resp.json();
+
+    setShowGuestWizard(false);
+    window.location.href = init_point;
 
   } catch (e) {
-    console.error('Error en handleGuestConfirm:', e)
-    setPurchaseError('Error al procesar compra.')
+    console.error('Error en handleGuestConfirm:', e);
+    setPurchaseError('Error al procesar compra.');
   } finally {
-    setPurchasing(false)
-    setShowGuestWizard(false)
+    setPurchasing(false);
   }
-}
+};
 
 
 

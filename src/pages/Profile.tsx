@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import QRCode from 'qrcode';
-
+import { useNavigate } from 'react-router-dom';
 interface PurchasedTicket {
   id: string;
   quantity: number;
@@ -41,6 +41,7 @@ interface Event {
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('tickets');
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [purchasedTickets, setPurchasedTickets] = useState<PurchasedTicket[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -59,6 +60,9 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (!user) {
+      navigate('/ingresar');
+    }
     const generateQRCode = async (ticketId: string, qrCode: string) => {
       try {
         const qrDataUrl = await QRCode.toDataURL(qrCode, {
