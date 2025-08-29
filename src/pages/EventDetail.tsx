@@ -5,8 +5,10 @@ import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAuth } from '../context/AuthContext';
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL!
-const ANON_KEY    = import.meta.env.VITE_SUPABASE_ANON_KEY!
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL!;
+const ANON_KEY    = import.meta.env.VITE_SUPABASE_ANON_KEY!;
+
 interface Event {
   id: string;
   name: string;
@@ -48,6 +50,7 @@ export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
   const [event, setEvent] = useState<Event | null>(null);
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
   const [ticketQuantities, setTicketQuantities] = useState<TicketQuantity>({});
@@ -60,6 +63,7 @@ export default function EventDetail() {
   const [showGuestWizard, setShowGuestWizard] = useState(false);
   const [guestErrors, setGuestErrors] = useState<Partial<Record<keyof GuestData, string>>>({});
   const [guestStep, setGuestStep] = useState<1 | 2 | 3>(1);
+
   const [guestData, setGuestData] = useState<GuestData>({
     nombre: '', apellido: '', idType: 'DNI', idNumber: '',
     email: '', confirmEmail: '', phone: '', country: ''
@@ -117,6 +121,78 @@ export default function EventDetail() {
     return purchaseTickets();
   };
 
+  // ------------ Validaciones ------------
+  const validateGuestData = (guestData: GuestData) => {
+    const errors: Partial<Record<keyof GuestData, string>> = {};
+    const required: (keyof GuestData)[] = ["nombre","apellido","idType","idNumber","email","confirmEmail","phone","country"];
+
+    required.forEach(k => {
+      if (!guestData[k] || String(guestData[k]).trim() === "") {
+        errors[k] = "Campo requerido";
+      }
+    });
+
+    if (guestData.apellido && guestData.apellido.trim().length < 3) {
+      errors.apellido = "Debe tener al menos 3 caracteres";
+    }
+    if (guestData.idNumber && guestData.idNumber.trim().length < 5) {
+      errors.idNumber = "Debe tener al menos 5 caracteres";
+    }
+
+    if (guestData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestData.email)) {
+      errors.email = "Email inválido";
+    }
+
+    if (guestData.confirmEmail && guestData.email !== guestData.confirmEmail) {
+      errors.confirmEmail = "Los correos no coinciden";
+    }
+
+    if (guestData.idType && !["DNI","Pasaporte"].includes(guestData.idType)) {
+      errors.idType = "Tipo inválido";
+    }
+
+    if (guestData.phone && !/^[\d\s+()-]{6,}$/.test(guestData.phone)) {
+      errors.phone = "Teléfono inválido";
+    }
+
+    return {
+      ok: Object.keys(errors).length === 0,
+      errors
+    };
+  };
+
+  const validateField = (name: keyof GuestData, value: string) => {
+    switch (name) {
+      case "nombre":
+      case "apellido":
+        if (value.trim() === "") return "Campo requerido";
+        if (value.trim().length < 3) return "Debe tener al menos 3 caracteres";
+        return "";
+      case "country":
+      case "idNumber":
+        if (value.trim() === "") return "Campo requerido";
+        if (value.trim().length < 5) return "Debe tener al menos 5 caracteres";
+        return "";
+      case "email":
+        if (value.trim() === "") return "Campo requerido";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email inválido";
+        return "";
+      case "confirmEmail":
+        if (value.trim() === "") return "Campo requerido";
+        if (value !== guestData.email) return "Los correos no coinciden";
+        return "";
+      case "phone":
+        if (value.trim() === "") return "Campo requerido";
+        if (!/^[\d\s+()-]{6,}$/.test(value)) return "Teléfono inválido";
+        return "";
+      case "idType":
+        return ["DNI", "Pasaporte"].includes(value) ? "" : "Tipo inválido";
+      default:
+        return "";
+    }
+  };
+
+  // ------------ Compra logueado ------------
   const purchaseTickets = async () => {
     const totalTickets = getTotalTickets();
     if (!event || totalTickets === 0) {
@@ -131,8 +207,7 @@ export default function EventDetail() {
           const qty = ticketQuantities[t.id] || 0;
           if (qty > 0) {
             const totalPrice = parseFloat(
-              ((t.price * (1 + (event.marketplace_fee / 100))) * qty)
-              .toFixed(2)
+              ((t.price * (1 + (event.marketplace_fee / 100))) * qty).toFixed(2)
             );
             const { error } = await supabase.rpc('purchase_tickets', {
               p_ticket_type_id: t.id,
@@ -144,20 +219,28 @@ export default function EventDetail() {
           }
         }
       }
-      const items = ticketTypes
-        .filter(t => (ticketQuantities[t.id] || 0) > 0)
-        .map(t => ({
-          title: t.description,
-          quantity: ticketQuantities[t.id],
-          unit_price: parseFloat(
-            (t.price * (1 + (event.marketplace_fee / 100))).toFixed(2)
-          ),
-          currency_id: 'ARS'
-        }));
+
+      // Selecciones para el webhook
+      const selected = ticketTypes.filter(t => (ticketQuantities[t.id] || 0) > 0);
+      const ticketSelections = selected.map(t => ({
+        ticketTypeId: t.id,
+        quantity: ticketQuantities[t.id]!
+      }));
+
+      const items = selected.map(t => ({
+        title: t.description,
+        quantity: ticketQuantities[t.id],
+        unit_price: parseFloat(
+          (t.price * (1 + (event!.marketplace_fee / 100))).toFixed(2)
+        ),
+        currency_id: 'ARS'
+      }));
+
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       const queryParams = new URLSearchParams(window.location.search);
       const rrpp = queryParams.get('rrpp') || undefined;
+
       const resp = await fetch(
         'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/swift-task',
         {
@@ -167,10 +250,14 @@ export default function EventDetail() {
             ...(token ? { Authorization: `Bearer ${token}` } : {})
           },
           body: JSON.stringify({
+            guest: false,
             email: user?.email,
             userId: user?.id,
             event_id: event.id,
             items,
+            // Compat: si hay uno solo, mando también "plano"
+            ticketTypeId: selected.length === 1 ? selected[0].id : undefined,
+            ticketSelections, // <-- arreglo con todas las selecciones
             marketplace_fee: Math.round(
               calculateTotal() * (event.marketplace_fee / 100)
             ),
@@ -178,6 +265,7 @@ export default function EventDetail() {
           })
         }
       );
+
       if (!resp.ok) throw new Error();
       const { init_point } = await resp.json();
       window.location.href = init_point;
@@ -189,142 +277,76 @@ export default function EventDetail() {
     }
   };
 
-const validateGuestData = (guestData: GuestData) => {
-  const errors: Partial<Record<keyof GuestData, string>> = {};
-  const required: (keyof GuestData)[] = ["nombre","apellido","idType","idNumber","email","confirmEmail","phone","country"];
-
-  required.forEach(k => {
-    if (!guestData[k] || String(guestData[k]).trim() === "") {
-      errors[k] = "Campo requerido";
+  // ------------ Compra guest ------------
+  const handleGuestConfirm = async () => {
+    const { ok, errors } = validateGuestData(guestData);
+    if (!ok) {
+      setGuestErrors(errors);
+      setPurchaseError("Por favor corregí los campos marcados en rojo.");
+      return;
     }
-  });
 
-  if (guestData.email.trim() !== guestData.confirmEmail.trim()) {
-    errors.confirmEmail = "Los correos no coinciden";
-  }
+    const selected = ticketTypes.filter(t => (ticketQuantities[t.id] || 0) > 0);
+    if (selected.length === 0) {
+      setPurchaseError("No hay entradas seleccionadas.");
+      return;
+    }
+    if (selected.length > 1) {
+      setPurchaseError("Como invitado, seleccioná un solo tipo de entrada por compra.");
+      return;
+    }
 
-  if (guestData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestData.email)) {
-    errors.email = "Email inválido";
-  }
+    const items = selected.map(t => ({
+      title:      t.description,
+      quantity:   ticketQuantities[t.id]!, // ya validado > 0
+      unit_price: parseFloat((t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)),
+      currency_id:'ARS'
+    }));
 
-  if (guestData.idType && !["DNI","Pasaporte"].includes(guestData.idType)) {
-    errors.idType = "Tipo inválido";
-  }
+    const ticketTypeId = selected[0].id;
+    const queryParams = new URLSearchParams(window.location.search);
+    const rrpp = queryParams.get('rrpp') || undefined;
+    setPurchasing(true);
+    setPurchaseError(null);
 
-  if (guestData.phone && !/^[\d\s+()-]{6,}$/.test(guestData.phone)) {
-    errors.phone = "Teléfono inválido";
-  }
+    try {
+      const resp = await fetch(`https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/swift-task`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey':        ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`
+        },
+        body: JSON.stringify({
+          email:           guestData.email,
+          userId:          null,
+          guest:           true,
+          guestInfo:       guestData,
+          event_id:        event!.id,
+          ticketTypeId,
+          ...(rrpp && { rrpp }),
+          items,
+          marketplace_fee: Math.round(calculateTotal() * (event!.marketplace_fee / 100))
+        })
+      });
 
-  return {
-    ok: Object.keys(errors).length === 0,
-    errors
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: resp.statusText }));
+        console.error('swift-task error', resp.status, err);
+        throw new Error(err.error || `HTTP ${resp.status}`);
+      }
+
+      const { init_point } = await resp.json();
+      setShowGuestWizard(false);
+      window.location.href = init_point;
+
+    } catch (e) {
+      console.error('Error en handleGuestConfirm:', e);
+      setPurchaseError('Error al procesar compra.');
+    } finally {
+      setPurchasing(false);
+    }
   };
-};
-
-const validateField = (name: keyof GuestData, value: string) => {
-  switch (name) {
-    case "nombre":
-    case "apellido":
-      if (value.trim() === "") return "Campo requerido";
-      if (value.trim().length < 3) return "Debe tener al menos 3 caracteres";
-      return "";
-    case "country":
-    case "idNumber":
-      if (value.trim() === "") return "Campo requerido";
-      if (value.trim().length < 5) return "Debe tener al menos 5 caracteres";
-      return "";
-    case "email":
-      if (value.trim() === "") return "Campo requerido";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email inválido";
-      return "";
-    case "confirmEmail":
-      if (value.trim() === "") return "Campo requerido";
-      if (value !== guestData.email) return "Los correos no coinciden";
-      return "";
-    case "phone":
-      if (value.trim() === "") return "Campo requerido";
-      if (!/^[\d\s+()-]{6,}$/.test(value)) return "Teléfono inválido";
-      return "";
-    case "idType":
-      return ["DNI", "Pasaporte"].includes(value) ? "" : "Tipo inválido";
-    default:
-      return "";
-  }
-};
-
-const handleGuestConfirm = async () => {
-  const { ok, message } = validateGuestData(guestData);
-  if (!ok) {
-    setPurchaseError(message);
-    return;
-  }
-
-  const selected = ticketTypes.filter(t => (ticketQuantities[t.id] || 0) > 0);
-  if (selected.length === 0) {
-    setPurchaseError("No hay entradas seleccionadas.");
-    return;
-  }
-  if (selected.length > 1) {
-    setPurchaseError("Como invitado, seleccioná un solo tipo de entrada por compra.");
-    return;
-  }
-
-  const items = selected.map(t => ({
-    title:      t.description,
-    quantity:   ticketQuantities[t.id]!, // ya validado > 0
-    unit_price: parseFloat((t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)),
-    currency_id:'ARS'
-  }));
-
-  const ticketTypeId = selected[0].id;
-  const queryParams = new URLSearchParams(window.location.search);
-  const rrpp = queryParams.get('rrpp') || undefined;
-  setPurchasing(true);
-  setPurchaseError(null);
-
-  try {
-    const resp = await fetch(`https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/swift-task`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey':        ANON_KEY,
-        'Authorization': `Bearer ${ANON_KEY}`
-      },
-      body: JSON.stringify({
-        email:           guestData.email,
-        userId:          null,
-        guest:           true,
-        guestInfo:       guestData,
-        event_id:        event!.id,
-        ticketTypeId,
-        ...(rrpp && { rrpp }),
-        items,
-        marketplace_fee: Math.round(calculateTotal() * (event!.marketplace_fee / 100))
-      })
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: resp.statusText }));
-      console.error('swift-task error', resp.status, err);
-      throw new Error(err.error || `HTTP ${resp.status}`);
-    }
-
-    const { init_point } = await resp.json();
-
-    setShowGuestWizard(false);
-    window.location.href = init_point;
-
-  } catch (e) {
-    console.error('Error en handleGuestConfirm:', e);
-    setPurchaseError('Error al procesar compra.');
-  } finally {
-    setPurchasing(false);
-  }
-};
-
-
-
-
 
   if (loading || !event) {
     return (
@@ -369,11 +391,14 @@ const handleGuestConfirm = async () => {
             </div>
           </div>
           <p className="text-gray-400 mb-8">{event.description}</p>
-          {purchaseError && (
+
+          {/* Mostrar error global solo si NO está abierto el wizard */}
+          {purchaseError && !showGuestWizard && (
             <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 px-4 py-2 rounded">
               {purchaseError}
             </div>
           )}
+
           <h2 className="text-xl font-semibold text-white mb-4">Entradas disponibles</h2>
           <div className="space-y-4">
             {visibleTickets.map(tk => (
@@ -461,43 +486,40 @@ const handleGuestConfirm = async () => {
 
             {guestStep === 2 && (
               <>
-                  {purchaseError && (
-                    <div
-                      className={`mb-4 px-4 py-2 rounded text-red-200 bg-red-900/50 border border-red-500 
-                      transition-opacity duration-500 ease-in-out ${purchaseError ? "opacity-100" : "opacity-0"}`}
-                    >
-                      {purchaseError || ""}
-                    </div>
-                  )}
+                {purchaseError && (
+                  <div
+                    className={`mb-4 px-4 py-2 rounded text-red-200 bg-red-900/50 border border-red-500 
+                    transition-opacity duration-500 ease-in-out ${purchaseError ? "opacity-100" : "opacity-0"}`}
+                  >
+                    {purchaseError || ""}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <input
                     placeholder="Nombre"
+                    required
+                    minLength={3}
                     value={guestData.nombre}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, nombre: val });
                       setGuestErrors(prev => ({ ...prev, nombre: validateField("nombre", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.nombre
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.nombre ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <input
                     placeholder="Apellido"
+                    required
+                    minLength={3}
                     value={guestData.apellido}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, apellido: val });
                       setGuestErrors(prev => ({ ...prev, apellido: validateField("apellido", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.apellido
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.apellido ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <select
@@ -507,11 +529,7 @@ const handleGuestConfirm = async () => {
                       setGuestData({ ...guestData, idType: val });
                       setGuestErrors(prev => ({ ...prev, idType: validateField("idType", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.idType
-                        ? "bg-red-900/40 border border-red-500 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.idType ? "bg-red-900/40 border border-red-500 text-white" : "bg-[#2a2a2a] text-white"}`}
                   >
                     <option>DNI</option>
                     <option>Pasaporte</option>
@@ -519,38 +537,39 @@ const handleGuestConfirm = async () => {
 
                   <input
                     placeholder="Número de identificación"
+                    required
+                    minLength={5}
                     value={guestData.idNumber}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, idNumber: val });
                       setGuestErrors(prev => ({ ...prev, idNumber: validateField("idNumber", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.idNumber
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.idNumber ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <input
                     placeholder="Mail"
                     type="email"
+                    required
                     value={guestData.email}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, email: val });
-                      setGuestErrors(prev => ({ ...prev, email: validateField("email", val) }));
+                      setGuestErrors(prev => ({
+                        ...prev,
+                        email: validateField("email", val),
+                        // revalida confirmEmail cuando cambia email
+                        confirmEmail: validateField("confirmEmail", guestData.confirmEmail)
+                      }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.email
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.email ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <input
                     placeholder="Confirmar mail"
                     type="email"
+                    required
                     value={guestData.confirmEmail}
                     onChange={e => {
                       const val = e.target.value;
@@ -560,45 +579,34 @@ const handleGuestConfirm = async () => {
                         confirmEmail: validateField("confirmEmail", val)
                       }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.confirmEmail
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.confirmEmail ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <input
                     placeholder="Número de teléfono"
+                    required
                     value={guestData.phone}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, phone: val });
                       setGuestErrors(prev => ({ ...prev, phone: validateField("phone", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.phone
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.phone ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
 
                   <input
                     placeholder="País"
+                    required
                     value={guestData.country}
                     onChange={e => {
                       const val = e.target.value;
                       setGuestData({ ...guestData, country: val });
                       setGuestErrors(prev => ({ ...prev, country: validateField("country", val) }));
                     }}
-                    className={`p-3 rounded w-full ${
-                      guestErrors.country
-                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
-                        : "bg-[#2a2a2a] text-white"
-                    }`}
+                    className={`p-3 rounded w-full ${guestErrors.country ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white" : "bg-[#2a2a2a] text-white"}`}
                   />
-
-
                 </div>
+
                 <div className="flex flex-col lg:flex-row justify-between gap-3 mt-6">
                   <button
                     onClick={() => setGuestStep(1)}
@@ -609,16 +617,16 @@ const handleGuestConfirm = async () => {
 
                   <button
                     onClick={() => {
-                    const { ok, errors } = validateGuestData(guestData);
-                    if (!ok) {
-                      setGuestErrors(errors);
-                      setPurchaseError("Por favor corregí los campos marcados en rojo.");
-                      return;
-                    }
-                    setGuestErrors({});
-                    setPurchaseError(null);
-                    setGuestStep(3);
-                  }}
+                      const { ok, errors } = validateGuestData(guestData);
+                      if (!ok) {
+                        setGuestErrors(errors);
+                        setPurchaseError("Por favor corregí los campos marcados en rojo.");
+                        return;
+                      }
+                      setGuestErrors({});
+                      setPurchaseError(null);
+                      setGuestStep(3);
+                    }}
                     className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all order-1 lg:order-2"
                   >
                     Siguiente
