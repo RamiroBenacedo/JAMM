@@ -58,6 +58,7 @@ export default function EventDetail() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [continueAsGuest, setContinueAsGuest] = useState(false);
   const [showGuestWizard, setShowGuestWizard] = useState(false);
+  const [guestErrors, setGuestErrors] = useState<Partial<Record<keyof GuestData, string>>>({});
   const [guestStep, setGuestStep] = useState<1 | 2 | 3>(1);
   const [guestData, setGuestData] = useState<GuestData>({
     nombre: '', apellido: '', idType: 'DNI', idNumber: '',
@@ -188,43 +189,67 @@ export default function EventDetail() {
     }
   };
 
-const validateGuestData = (guestData: {
-  nombre: string;
-  apellido: string;
-  idType: string;
-  idNumber: string;
-  email: string;
-  confirmEmail: string;
-  phone: string;
-  country: string;
-}) => {
-  const required = ["nombre","apellido","idType","idNumber","email","confirmEmail","phone","country"] as const;
+const validateGuestData = (guestData: GuestData) => {
+  const errors: Partial<Record<keyof GuestData, string>> = {};
+  const required: (keyof GuestData)[] = ["nombre","apellido","idType","idNumber","email","confirmEmail","phone","country"];
 
-  for (const k of required) {
+  required.forEach(k => {
     if (!guestData[k] || String(guestData[k]).trim() === "") {
-      return { ok: false, message: "Por favor, completá todos los campos." };
+      errors[k] = "Campo requerido";
     }
-  }
+  });
 
   if (guestData.email.trim() !== guestData.confirmEmail.trim()) {
-    return { ok: false, message: "Los correos no coinciden." };
+    errors.confirmEmail = "Los correos no coinciden";
   }
 
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestData.email);
-  if (!emailOk) {
-    return { ok: false, message: "Ingresá un email válido." };
+  if (guestData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestData.email)) {
+    errors.email = "Email inválido";
   }
 
-  const allowedIdTypes = ["DNI","Pasaporte"];
-  if (!allowedIdTypes.includes(guestData.idType)) {
-    return { ok: false, message: "Tipo de identificación inválido." };
+  if (guestData.idType && !["DNI","Pasaporte"].includes(guestData.idType)) {
+    errors.idType = "Tipo inválido";
   }
 
-  if (!/^[\d\s+()-]{6,}$/.test(guestData.phone)) {
-    return { ok: false, message: "Ingresá un teléfono válido." };
+  if (guestData.phone && !/^[\d\s+()-]{6,}$/.test(guestData.phone)) {
+    errors.phone = "Teléfono inválido";
   }
 
-  return { ok: true, message: "" };
+  return {
+    ok: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+const validateField = (name: keyof GuestData, value: string) => {
+  switch (name) {
+    case "nombre":
+    case "apellido":
+      if (value.trim() === "") return "Campo requerido";
+      if (value.trim().length < 3) return "Debe tener al menos 3 caracteres";
+      return "";
+    case "country":
+    case "idNumber":
+      if (value.trim() === "") return "Campo requerido";
+      if (value.trim().length < 5) return "Debe tener al menos 5 caracteres";
+      return "";
+    case "email":
+      if (value.trim() === "") return "Campo requerido";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email inválido";
+      return "";
+    case "confirmEmail":
+      if (value.trim() === "") return "Campo requerido";
+      if (value !== guestData.email) return "Los correos no coinciden";
+      return "";
+    case "phone":
+      if (value.trim() === "") return "Campo requerido";
+      if (!/^[\d\s+()-]{6,}$/.test(value)) return "Teléfono inválido";
+      return "";
+    case "idType":
+      return ["DNI", "Pasaporte"].includes(value) ? "" : "Tipo inválido";
+    default:
+      return "";
+  }
 };
 
 const handleGuestConfirm = async () => {
@@ -436,18 +461,143 @@ const handleGuestConfirm = async () => {
 
             {guestStep === 2 && (
               <>
+                  {purchaseError && (
+                    <div
+                      className={`mb-4 px-4 py-2 rounded text-red-200 bg-red-900/50 border border-red-500 
+                      transition-opacity duration-500 ease-in-out ${purchaseError ? "opacity-100" : "opacity-0"}`}
+                    >
+                      {purchaseError || ""}
+                    </div>
+                  )}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <input placeholder="Nombre" value={guestData.nombre} onChange={e => setGuestData({...guestData, nombre: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <input placeholder="Apellido" value={guestData.apellido} onChange={e => setGuestData({...guestData, apellido: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <select value={guestData.idType} onChange={e => setGuestData({...guestData, idType: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full">
+                  <input
+                    placeholder="Nombre"
+                    value={guestData.nombre}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, nombre: val });
+                      setGuestErrors(prev => ({ ...prev, nombre: validateField("nombre", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.nombre
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <input
+                    placeholder="Apellido"
+                    value={guestData.apellido}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, apellido: val });
+                      setGuestErrors(prev => ({ ...prev, apellido: validateField("apellido", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.apellido
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <select
+                    value={guestData.idType}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, idType: val });
+                      setGuestErrors(prev => ({ ...prev, idType: validateField("idType", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.idType
+                        ? "bg-red-900/40 border border-red-500 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  >
                     <option>DNI</option>
                     <option>Pasaporte</option>
                   </select>
-                  <input placeholder="Número de identificación" value={guestData.idNumber} onChange={e => setGuestData({...guestData, idNumber: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <input placeholder="Mail" type="email" value={guestData.email} onChange={e => setGuestData({...guestData, email: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <input placeholder="Confirmar mail" type="email" value={guestData.confirmEmail} onChange={e => setGuestData({...guestData, confirmEmail: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <input placeholder="Número de teléfono" value={guestData.phone} onChange={e => setGuestData({...guestData, phone: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
-                  <input placeholder="País" value={guestData.country} onChange={e => setGuestData({...guestData, country: e.target.value})} className="p-3 rounded bg-[#2a2a2a] text-white w-full" />
+
+                  <input
+                    placeholder="Número de identificación"
+                    value={guestData.idNumber}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, idNumber: val });
+                      setGuestErrors(prev => ({ ...prev, idNumber: validateField("idNumber", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.idNumber
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <input
+                    placeholder="Mail"
+                    type="email"
+                    value={guestData.email}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, email: val });
+                      setGuestErrors(prev => ({ ...prev, email: validateField("email", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.email
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <input
+                    placeholder="Confirmar mail"
+                    type="email"
+                    value={guestData.confirmEmail}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, confirmEmail: val });
+                      setGuestErrors(prev => ({
+                        ...prev,
+                        confirmEmail: validateField("confirmEmail", val)
+                      }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.confirmEmail
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <input
+                    placeholder="Número de teléfono"
+                    value={guestData.phone}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, phone: val });
+                      setGuestErrors(prev => ({ ...prev, phone: validateField("phone", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.phone
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+                  <input
+                    placeholder="País"
+                    value={guestData.country}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setGuestData({ ...guestData, country: val });
+                      setGuestErrors(prev => ({ ...prev, country: validateField("country", val) }));
+                    }}
+                    className={`p-3 rounded w-full ${
+                      guestErrors.country
+                        ? "bg-red-900/40 border border-red-500 placeholder-red-400 text-white"
+                        : "bg-[#2a2a2a] text-white"
+                    }`}
+                  />
+
+
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between gap-3 mt-6">
                   <button
@@ -459,14 +609,16 @@ const handleGuestConfirm = async () => {
 
                   <button
                     onClick={() => {
-                      const { ok, message } = validateGuestData(guestData);
-                      if (!ok) {
-                        setPurchaseError(message);
-                        return;
-                      }
-                      setPurchaseError(null);
-                      setGuestStep(3);
-                    }}
+                    const { ok, errors } = validateGuestData(guestData);
+                    if (!ok) {
+                      setGuestErrors(errors);
+                      setPurchaseError("Por favor corregí los campos marcados en rojo.");
+                      return;
+                    }
+                    setGuestErrors({});
+                    setPurchaseError(null);
+                    setGuestStep(3);
+                  }}
                     className="w-full lg:w-auto px-6 py-3 bg-[#FF5722] rounded text-white hover:bg-opacity-90 transition-all order-1 lg:order-2"
                   >
                     Siguiente
