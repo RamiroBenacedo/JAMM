@@ -306,6 +306,7 @@ const confirmarEliminacion = async () => {
               <th className="px-4 py-3 text-left">Nombre</th>
               <th className="px-4 py-3 text-left">Email</th>
               <th className="px-4 py-3 text-left">Rol</th>
+              <th className="px-4 py-3 text-left">Código</th>
               <th className="px-4 py-3 text-left">Eventos Asociados</th>
               <th className="px-4 py-3 text-left">Acciones</th>
             </tr>
@@ -316,6 +317,25 @@ const confirmarEliminacion = async () => {
                 <td className="px-4 py-3">{usuario.full_name || '—'}</td>
                 <td className="px-4 py-3">{usuario.email || '—'}</td>
                 <td className="px-4 py-3">{usuario.rol?.toUpperCase() || '—'}</td>
+                <td className="px-4 py-3">
+                  {usuario.codigo && usuario.eventos.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {usuario.eventos.map((e: any) => (
+                        <a
+                          key={e.id}
+                          href={`/evento/${e.id}?rrpp=${usuario.codigo}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block rounded bg-[#111] border border-gray-600 px-2 py-0.5 text-xs text-[#FF5722] hover:text-white hover:bg-[#FF5722] transition-colors"
+                        >
+                          {usuario.codigo}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   {usuario.eventos.map((e: any) => e.name).join(', ') || '—'}
                 </td>
@@ -359,6 +379,26 @@ const confirmarEliminacion = async () => {
               <div>
                 <p className="text-gray-400 text-xs">Rol</p>
                 <p className="text-white">{usuario.rol?.toUpperCase() || '—'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-xs">Código</p>
+                <div className="flex flex-wrap gap-2">
+                  {usuario.codigo && usuario.eventos.length > 0 ? (
+                    usuario.eventos.map((e: any) => (
+                      <a
+                        key={e.id}
+                        href={`/evento/${e.id}?rrpp=${usuario.codigo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded bg-[#1b1b1b] border border-gray-600 px-2 py-0.5 text-xs text-[#FF5722] hover:text-white hover:bg-[#FF5722] transition-colors"
+                      >
+                        {usuario.codigo}
+                      </a>
+                    ))
+                  ) : (
+                    <span className="text-white">—</span>
+                  )}
+                </div>
               </div>
               <div>
                 <p className="text-gray-400 text-xs">Eventos Asociados</p>
