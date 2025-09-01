@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { format, subMonths, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +26,7 @@ type EventStat = {
   ticketsFree: number;
   totalConfirmed: number;
   ticketsAvailable: number;
+  createdAt: string;
 };
 
 type Purchase = {
@@ -41,6 +43,8 @@ const MisEventos: React.FC = () => {
   const [chartData, setChartData] = useState<Purchase[]>([]);
   const [timeframe, setTimeframe] = useState<'days' | 'months' | 'events'>('months');
   const [rol, setRol] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -64,6 +68,7 @@ const MisEventos: React.FC = () => {
       const baseSelect = `
         id,
         name,
+        created_at,
         max_tickets_per_user,
         ticket_types (
           id,
@@ -181,7 +186,8 @@ const MisEventos: React.FC = () => {
           ticketsPaid,
           ticketsFree,
           totalConfirmed,
-          ticketsAvailable
+          ticketsAvailable,
+          createdAt: e.created_at
         };
       });
 
@@ -226,7 +232,40 @@ const MisEventos: React.FC = () => {
 
   const handleVerDetalles = (id: string) => navigate(`/eventos/${id}`);
 
-  if (loading) return <div className="text-white p-8">Cargando eventos...</div>;
+  const handleDateSort = () => {
+    if (sortOrder === null) {
+      setSortOrder('desc'); // First click: newest first
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc'); // Second click: oldest first  
+    } else {
+      setSortOrder(null); // Third click: no sorting
+    }
+  };
+
+  const filteredAndSortedEvents = eventStats
+    .filter(event => event.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if (sortOrder === null) return 0;
+      
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      
+      if (sortOrder === 'asc') {
+        return dateA.getTime() - dateB.getTime();
+      } else {
+        return dateB.getTime() - dateA.getTime();
+      }
+    });
+
+  if (loading) {
+    return (
+      <div className="bg-[#2a2a2a]">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
+        </div>
+      </div>
+    );
+  }
 
   const totals = eventStats.reduce(
     (acc, cur) => ({
@@ -353,11 +392,44 @@ const MisEventos: React.FC = () => {
 
         {/* Events Table */}
         <div className="bg-[#1f1f1f] rounded-lg border border-gray-700 overflow-hidden">
+          {/* Search Bar */}
+          <div className="p-4 border-b border-gray-700">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar eventos por nombre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+          
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-[#111] text-gray-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3 text-left">Evento</th>
+                  <th className="px-4 py-3 text-left">
+                    <button
+                      onClick={handleDateSort}
+                      className="flex items-center gap-2 hover:text-white transition-colors group"
+                    >
+                      Fecha de Publicación
+                      {sortOrder === null && (
+                        <ArrowUpDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                      {sortOrder === 'desc' && (
+                        <ArrowDown className="h-4 w-4 text-[#FF5722]" />
+                      )}
+                      {sortOrder === 'asc' && (
+                        <ArrowUp className="h-4 w-4 text-[#FF5722]" />
+                      )}
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-right">Ventas</th>
                   <th className="px-4 py-3 text-right">Tickets Pagos</th>
                   <th className="px-4 py-3 text-right">Tickets Gratis</th>
@@ -366,15 +438,18 @@ const MisEventos: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {eventStats.length === 0 ? (
+                {filteredAndSortedEvents.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-gray-500 text-center">
-                      No hay eventos para mostrar.
+                    <td colSpan={7} className="px-4 py-8 text-gray-500 text-center">
+                      {searchTerm ? 'No se encontraron eventos que coincidan con la búsqueda.' : 'No hay eventos para mostrar.'}
                     </td>
                   </tr>
-                ) : eventStats.map(e => (
+                ) : filteredAndSortedEvents.map(e => (
                   <tr key={e.id} className="hover:bg-[#2a2a2a] transition-colors">
                     <td className="px-4 py-3 text-left">{e.name}</td>
+                    <td className="px-4 py-3 text-left">
+                      {format(new Date(e.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+                    </td>
                     <td className="px-4 py-3 text-right">${e.totalSales.toFixed(2)}</td>
                     <td className="px-4 py-3 text-right">{e.ticketsPaid}</td>
                     <td className="px-4 py-3 text-right">{e.ticketsFree}</td>

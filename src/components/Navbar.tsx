@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import CreateEventButton from './CreateEventButton';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -57,19 +58,18 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-            <span className="text-4xl font-bold" style={{ fontFamily: 'Gasoek One', color: '#232323' }}>JAMM</span>
+            <span className="text-4xl font-bold font-gasoek" style={{ color: '#232323' }}>JAMM</span>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Link 
-                  to="/crear-evento" 
+                <CreateEventButton
                   className="primary-button"
                   style={{ background: '#232323', color: 'white' }}
                 >
                   Crear Evento
-                </Link>
+                </CreateEventButton>
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}

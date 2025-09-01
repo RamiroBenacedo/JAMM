@@ -37,13 +37,17 @@ const EventDetailsRouter: React.FC = () => {
   }, [user]);
 
   if (loading) {
-    return <div className="text-white p-8">Cargando...</div>;
+    return (
+      <div className="bg-[#2a2a2a] min-h-[calc(100vh-8rem)]">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="text-white p-8">
-      <div className="mb-4">
-      </div>
+    <div className="bg-[#2a2a2a] min-h-[calc(100vh-8rem)]">
       {rol === 'rrpp' ? (
         <EventDetailsRRPP />
       ) : (

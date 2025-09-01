@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Clock } from 'lucide-react';
+import { Calendar, MapPin, Clock, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -20,6 +20,7 @@ function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -46,6 +47,12 @@ function Events() {
     fetchEvents();
   }, []);
 
+  const filteredEvents = events.filter(event =>
+    event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="bg-[#2a2a2a]">
@@ -60,6 +67,19 @@ function Events() {
     <div className="bg-[#2a2a2a]">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-white mb-8">Eventos</h1>
+        
+        <div className="relative mb-8">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Buscar eventos por nombre, descripción o ubicación..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full pl-10 pr-4 py-3 bg-[#1f1f1f] border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722] focus:border-transparent transition-all"
+          />
+        </div>
 
         {error && (
           <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-8">
@@ -67,14 +87,18 @@ function Events() {
           </div>
         )}
 
-        {events.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="bg-[#1f1f1f] rounded-lg shadow-lg overflow-hidden p-6 text-center">
-            <h2 className="text-xl font-semibold text-white mb-2">No hay eventos disponibles</h2>
-            <p className="text-gray-400">Aún no se han publicado eventos.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              {searchTerm ? 'No se encontraron eventos' : 'No hay eventos disponibles'}
+            </h2>
+            <p className="text-gray-400">
+              {searchTerm ? 'Intenta con otros términos de búsqueda.' : 'Aún no se han publicado eventos.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
+            {filteredEvents.map((event) => (
               <Link
                 key={event.id}
                 to={`/evento/${event.id}`}

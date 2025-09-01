@@ -1,0 +1,505 @@
+import React, { useState, useEffect } from 'react';
+import { Settings, Mail, Lock, CheckCircle, AlertCircle, User, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+
+const Configuracion = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<{
+    full_name: string | null;
+    email: string | null;
+    hasPassword: boolean;
+    isOAuthUser: boolean;
+  }>({
+    full_name: null,
+    email: null,
+    hasPassword: false,
+    isOAuthUser: false
+  });
+  
+  // Estados para el cambio de email
+  const [emailForm, setEmailForm] = useState({
+    newEmail: '',
+    password: ''
+  });
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+
+  // Estados para el cambio de password
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  
+  // Estados para mostrar/ocultar contraseñas
+  const [showEmailPassword, setShowEmailPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        const { data: { user: userData }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) throw userError;
+        
+        // Detectar si el usuario es de OAuth (Google, Facebook, etc.)
+        const isOAuthUser = userData?.app_metadata?.providers?.length > 0 && 
+                           !userData?.app_metadata?.providers?.includes('email');
+        
+        // Para usuarios OAuth, asumimos que no tienen contraseña inicialmente
+        // Para usuarios de email, asumimos que sí tienen contraseña
+        const hasPassword = !isOAuthUser;
+
+        setUserData({
+          full_name: userData?.user_metadata?.full_name || 'Usuario',
+          email: userData?.email || '',
+          hasPassword,
+          isOAuthUser
+        });
+        
+        setEmailForm(prev => ({
+          ...prev,
+          newEmail: userData?.email || ''
+        }));
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmailForm({
+      ...emailForm,
+      [e.target.name]: e.target.value
+    });
+    if (emailError) setEmailError(null);
+    if (emailSuccess) setEmailSuccess(null);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordForm({
+      ...passwordForm,
+      [e.target.name]: e.target.value
+    });
+    if (passwordError) setPasswordError(null);
+    if (passwordSuccess) setPasswordSuccess(null);
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError(null);
+    setEmailSuccess(null);
+
+    const { newEmail, password } = emailForm;
+
+    // Validaciones
+    if (!newEmail.trim() || !password.trim()) {
+      setEmailError('Todos los campos son obligatorios');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      setEmailError('Por favor ingresa un email válido');
+      return;
+    }
+
+    if (newEmail === userData.email) {
+      setEmailError('El nuevo email debe ser diferente al actual');
+      return;
+    }
+
+    try {
+      setEmailLoading(true);
+
+      // Primero verificamos la contraseña actual
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userData.email || '',
+        password: password
+      });
+
+      if (signInError) {
+        setEmailError('Contraseña incorrecta');
+        return;
+      }
+
+      // Actualizamos el email
+      const { error: updateError } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+
+      if (updateError) {
+        if (updateError.message.includes('already been taken')) {
+          setEmailError('Este email ya está en uso por otra cuenta');
+        } else {
+          setEmailError('Error al actualizar el email. Intenta nuevamente.');
+        }
+        return;
+      }
+
+      setEmailSuccess('Se ha enviado un email de confirmación a tu nueva dirección. Revisa tu bandeja de entrada.');
+      setEmailForm({ newEmail: '', password: '' });
+    } catch (err) {
+      console.error('Error updating email:', err);
+      setEmailError('Error al actualizar el email. Intenta nuevamente.');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    // Validaciones básicas
+    if (!newPassword.trim() || !confirmPassword.trim()) {
+      setPasswordError('Todos los campos son obligatorios');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Las contraseñas nuevas no coinciden');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    // Validaciones específicas según el tipo de usuario
+    if (userData.hasPassword) {
+      // Usuario con contraseña existente
+      if (!currentPassword.trim()) {
+        setPasswordError('La contraseña actual es obligatoria');
+        return;
+      }
+      
+      if (currentPassword === newPassword) {
+        setPasswordError('La nueva contraseña debe ser diferente a la actual');
+        return;
+      }
+    }
+
+    try {
+      setPasswordLoading(true);
+
+      // Si el usuario tiene contraseña, verificamos la contraseña actual
+      if (userData.hasPassword) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: userData.email || '',
+          password: currentPassword
+        });
+
+        if (signInError) {
+          setPasswordError('Contraseña actual incorrecta');
+          return;
+        }
+      }
+
+      // Actualizamos la contraseña (esto funciona tanto para crear como para cambiar)
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        setPasswordError('Error al actualizar la contraseña. Intenta nuevamente.');
+        return;
+      }
+
+      // Si era un usuario OAuth, ahora tiene contraseña
+      if (!userData.hasPassword) {
+        setUserData(prev => ({ ...prev, hasPassword: true }));
+      }
+
+      setPasswordSuccess(userData.hasPassword ? 'Contraseña actualizada exitosamente' : 'Contraseña creada exitosamente');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error('Error updating password:', err);
+      setPasswordError('Error al actualizar la contraseña. Intenta nuevamente.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-[#2a2a2a] min-h-[calc(100vh-8rem)]">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5722]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#2a2a2a] min-h-[calc(100vh-8rem)]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-[#1f1f1f] shadow rounded-lg border border-gray-700">
+          <div className="px-4 py-5 sm:px-6">
+            <div className="flex items-center space-x-2">
+              <Settings className="h-6 w-6 text-[#FF5722]" />
+              <h2 className="text-xl lg:text-2xl font-bold text-white" >
+                Configuración de Cuenta
+              </h2>
+            </div>
+            <div className="mt-2 flex items-center space-x-2 text-gray-400">
+              <User className="h-4 w-4" />
+              <span style={{ fontFamily: 'Inter, sans-serif' }}>{userData.full_name}</span>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                
+                {/* Formulario para cambiar email */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-5 w-5 text-[#FF5722]" />
+                    <h3 className="text-base lg:text-lg font-medium text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      Cambiar Email
+                    </h3>
+                  </div>
+                  
+                  <form onSubmit={handleEmailSubmit} className="space-y-4">
+                    {emailError && (
+                      <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg flex items-center">
+                        <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                        <span className="text-xs lg:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{emailError}</span>
+                      </div>
+                    )}
+                    
+                    {emailSuccess && (
+                      <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg flex items-center">
+                        <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                        <span className="text-xs lg:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{emailSuccess}</span>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Email actual: <span className="text-gray-400">{userData.email}</span>
+                      </label>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="newEmail" className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Nuevo Email
+                      </label>
+                      <input
+                        id="newEmail"
+                        name="newEmail"
+                        type="email"
+                        required
+                        value={emailForm.newEmail}
+                        onChange={handleEmailChange}
+                        className="block w-full px-3 py-2 border border-gray-700 rounded-md shadow-sm placeholder-gray-400 text-white bg-[#111111] focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722]"
+                        placeholder="Ingresa tu nuevo email"
+                                              />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="emailPassword" className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Confirma tu contraseña actual
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="emailPassword"
+                          name="password"
+                          type={showEmailPassword ? "text" : "password"}
+                          required
+                          value={emailForm.password}
+                          onChange={handleEmailChange}
+                          className="block w-full px-3 py-2 pr-10 border border-gray-700 rounded-md shadow-sm placeholder-gray-400 text-white bg-[#111111] focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722]"
+                          placeholder="Contraseña actual"
+                                                  />
+                        <button
+                          type="button"
+                          onClick={() => setShowEmailPassword(!showEmailPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showEmailPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      disabled={emailLoading}
+                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-xs lg:text-sm font-medium text-white bg-[#FF5722] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF5722] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                          >
+                      {emailLoading ? 'Actualizando...' : 'Actualizar Email'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* Formulario para cambiar/crear contraseña */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-2">
+                    <Lock className="h-5 w-5 text-[#FF5722]" />
+                    <h3 className="text-base lg:text-lg font-medium text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      {userData.hasPassword ? 'Cambiar Contraseña' : 'Crear Contraseña'}
+                    </h3>
+                  </div>
+                  
+                  {userData.isOAuthUser && !userData.hasPassword && (
+                    <div className="bg-blue-900/50 border border-blue-500 text-blue-200 px-4 py-3 rounded-lg">
+                      <p className="text-xs lg:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Puedes crear una contraseña para poder iniciar sesión con email además de Google.
+                      </p>
+                    </div>
+                  )}
+                  
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    {passwordError && (
+                      <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg flex items-center">
+                        <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                        <span className="text-xs lg:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{passwordError}</span>
+                      </div>
+                    )}
+                    
+                    {passwordSuccess && (
+                      <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg flex items-center">
+                        <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                        <span className="text-xs lg:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{passwordSuccess}</span>
+                      </div>
+                    )}
+                    
+                    {userData.hasPassword && (
+                      <div>
+                        <label htmlFor="currentPassword" className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          Contraseña Actual
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="currentPassword"
+                            name="currentPassword"
+                            type={showCurrentPassword ? "text" : "password"}
+                            required
+                            value={passwordForm.currentPassword}
+                            onChange={handlePasswordChange}
+                            className="block w-full px-3 py-2 pr-10 border border-gray-700 rounded-md shadow-sm placeholder-gray-400 text-white bg-[#111111] focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722]"
+                            placeholder="Ingresa tu contraseña actual"
+                                                      />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
+                            tabIndex={-1}
+                          >
+                            {showCurrentPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label htmlFor="newPassword" className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {userData.hasPassword ? 'Nueva Contraseña' : 'Contraseña'}
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="newPassword"
+                          name="newPassword"
+                          type={showNewPassword ? "text" : "password"}
+                          required
+                          value={passwordForm.newPassword}
+                          onChange={handlePasswordChange}
+                          className="block w-full px-3 py-2 pr-10 border border-gray-700 rounded-md shadow-sm placeholder-gray-400 text-white bg-[#111111] focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722]"
+                          placeholder={userData.hasPassword ? "Ingresa tu nueva contraseña (mín. 6 caracteres)" : "Ingresa tu contraseña (mín. 6 caracteres)"}
+                                                  />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-xs lg:text-sm font-medium text-gray-300 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {userData.hasPassword ? 'Confirmar Nueva Contraseña' : 'Confirmar Contraseña'}
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          value={passwordForm.confirmPassword}
+                          onChange={handlePasswordChange}
+                          className="block w-full px-3 py-2 pr-10 border border-gray-700 rounded-md shadow-sm placeholder-gray-400 text-white bg-[#111111] focus:outline-none focus:ring-[#FF5722] focus:border-[#FF5722]"
+                          placeholder={userData.hasPassword ? "Confirma tu nueva contraseña" : "Confirma tu contraseña"}
+                                                  />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white transition-colors"
+                          tabIndex={-1}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      disabled={passwordLoading}
+                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-xs lg:text-sm font-medium text-white bg-[#FF5722] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF5722] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                          >
+                      {passwordLoading 
+                        ? (userData.hasPassword ? 'Actualizando...' : 'Creando...') 
+                        : (userData.hasPassword ? 'Actualizar Contraseña' : 'Crear Contraseña')
+                      }
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Configuracion;

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Ticket, Calendar, QrCode, Mail, User, CheckCircle, XCircle, Clock, AlertTriangle, Trash2 } from 'lucide-react';
+import { Ticket, QrCode, Mail, User, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import QRCode from 'qrcode';
-import { useNavigate } from 'react-router-dom';
+
 interface PurchasedTicket {
   id: string;
   quantity: number;
@@ -27,24 +27,10 @@ interface PurchasedTicket {
   }
 }
 
-interface Event {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  location: string;
-  ticket_types: {
-    type: string;
-    quantity: number;
-  }[]
-}
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState('tickets');
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [purchasedTickets, setPurchasedTickets] = useState<PurchasedTicket[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qrCodes, setQrCodes] = useState<{[key: string]: string}>({});
@@ -55,14 +41,8 @@ const Profile = () => {
     full_name: null,
     email: null
   });
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/ingresar');
-    }
     const generateQRCode = async (ticketId: string, qrCode: string) => {
       try {
         const qrDataUrl = await QRCode.toDataURL(qrCode, {
@@ -97,6 +77,7 @@ const Profile = () => {
           email: userData?.email || ''
         });
 
+
         // Fetch purchased tickets with event details
         const { data: ticketsData, error: ticketsError } = await supabase
           .from('purchased_tickets')
@@ -130,27 +111,6 @@ const Profile = () => {
           await generateQRCode(ticket.id, ticket.qr_code);
         }
 
-        // Fetch events created by the user
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('events')
-          .select(`
-            id,
-            name,
-            date,
-            time,
-            location,
-            ticket_types (
-              type,
-              quantity
-            )
-          `)
-          .eq('creator_id', user.id)
-          .eq('active', true)
-          .order('date', { ascending: true });
-
-        if (eventsError) throw eventsError;
-        setEvents(eventsData || []);
-
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError('Error al cargar los datos. Por favor, intenta de nuevo más tarde.');
@@ -162,45 +122,6 @@ const Profile = () => {
     fetchUserData();
   }, [user]);
 
-  const calculateAvailableTickets = (event: Event) => {
-    return event.ticket_types.reduce((sum, ticket) => {
-      // Only count non-courtesy tickets
-      if (ticket.type !== 'Cortesía') {
-        return sum + ticket.quantity;
-      }
-      return sum;
-    }, 0);
-  };
-
-  const handleDeleteEvent = async (eventId: string) => {
-    setEventToDelete(eventId);
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!eventToDelete) return;
-  
-    try {
-      setDeleting(true);
-  
-      // En lugar de eliminar, marcamos el evento como inactivo
-      const { error } = await supabase
-        .from('events')
-        .update({ active: false })
-        .eq('id', eventToDelete);
-  
-      if (error) throw error;
-  
-      setEvents(events.filter(event => event.id !== eventToDelete));
-      setShowDeleteModal(false);
-      setEventToDelete(null);
-    } catch (err) {
-      console.error('Error marcando evento como inactivo:', err);
-      setError('Error al eliminar el evento. Por favor, intenta de nuevo más tarde.');
-    } finally {
-      setDeleting(false);
-    }
-  };
   
 
   if (loading) {
@@ -240,32 +161,14 @@ const Profile = () => {
 
               <div className="border-b border-gray-700">
                 <nav className="-mb-px flex space-x-8">
-                  <button
-                    className={`${
-                      activeTab === 'tickets'
-                        ? 'border-white text-white'
-                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                    onClick={() => setActiveTab('tickets')}
-                  >
+                  <div className="border-white text-white whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                     <Ticket className="w-5 h-5 inline mr-2" />
                     Mis Tickets
-                  </button>
-                  <button
-                    className={`${
-                      activeTab === 'events'
-                        ? 'border-white text-white'
-                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                    onClick={() => setActiveTab('events')}
-                  >
-                    <Calendar className="w-5 h-5 inline mr-2" />
-                    Mis Eventos
-                  </button>
+                  </div>
                 </nav>
               </div>
 
-              {activeTab === 'tickets' && (
+              <div>
                 <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {purchasedTickets.length === 0 ? (
                     <div className="col-span-full bg-[#111111] p-6 text-center rounded-lg border border-gray-700">
@@ -336,129 +239,12 @@ const Profile = () => {
                     })
                   )}
                 </div>
-              )}
+              </div>
 
-              {activeTab === 'events' && (
-                <div className="mt-6">
-                  {events.length === 0 ? (
-                    <div className="bg-[#111111] p-6 text-center rounded-lg border border-gray-700">
-                      <p className="text-gray-400">No has creado ningún evento todavía.</p>
-                      <Link
-                        to="/crear-evento"
-                        className="mt-4 inline-block bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
-                      >
-                        Crear mi primer evento
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-[#111111]">
-                          <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Evento
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Fecha
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Ubicación
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Entradas Disponibles
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Acciones
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-[#1f1f1f] divide-y divide-gray-700">
-                          {events.map((event) => (
-                            <tr key={event.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-white">{event.name}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-300">
-                                  {format(new Date(event.date), "d MMM yyyy", { locale: es })}
-                                  <br />
-                                  {event.time}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-300">{event.location}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-300">{calculateAvailableTickets(event)}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <div className="flex space-x-4">
-                                  <Link
-                                    to={`/evento/${event.id}`}
-                                    className="text-[#FF5722] hover:text-opacity-80 transition-colors"
-                                  >
-                                    Ver detalles
-                                  </Link>
-                                  <button
-                                    onClick={() => handleDeleteEvent(event.id)}
-                                    className="text-red-500 hover:text-red-400 flex items-center"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-1" />
-                                    Eliminar
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-[#1f1f1f] rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-white mb-4">¿Estás seguro?</h3>
-              <p className="text-gray-300 mb-6">
-                Se perderán todos los datos relacionados con este evento, incluyendo entradas vendidas y configuraciones. Esta acción no se puede deshacer.
-              </p>
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setEventToDelete(null);
-                  }}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                  disabled={deleting}
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={deleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
-                >
-                  {deleting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                      Eliminando...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Eliminar evento
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

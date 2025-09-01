@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Ticket, Heart, Mail, Twitter, Instagram } from 'lucide-react';
 import LogoImage from '../constants/img/logo.png';
+import CreateEventButton from './CreateEventButton';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -9,7 +10,7 @@ const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Logo and description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center">
@@ -29,13 +30,37 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/crear-evento" className="text-gray-600 hover:text-[#FF5722] transition-colors">
+                <CreateEventButton className="text-gray-600 hover:text-[#FF5722] transition-colors">
                   Crear evento
+                </CreateEventButton>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legales */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+              Legales
+            </h3>
+            <ul className="mt-4 space-y-4">
+              <li>
+                <Link to="/terminos-y-condiciones" className="text-gray-600 hover:text-[#FF5722] transition-colors">
+                  Términos y condiciones
                 </Link>
               </li>
               <li>
-                <Link to="/perfil" className="text-gray-600 hover:text-[#FF5722] transition-colors">
-                  Mi perfil
+                <Link to="/politica-de-devolucion" className="text-gray-600 hover:text-[#FF5722] transition-colors">
+                  Política de devoluciones
+                </Link>
+              </li>
+              <li>
+                <Link to="/politica-de-privacidad" className="text-gray-600 hover:text-[#FF5722] transition-colors">
+                  Política de privacidad
+                </Link>
+              </li>
+              <li>
+                <Link to="/defensa-del-consumidor" className="text-gray-600 hover:text-[#FF5722] transition-colors">
+                  Ley de defensa al consumidor
                 </Link>
               </li>
             </ul>

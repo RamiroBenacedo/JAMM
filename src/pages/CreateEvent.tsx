@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Ticket, Settings, Upload, X } from 'lucide-react';
+import { Calendar, Ticket, Settings, Upload, X, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import Modal from 'react-modal';
+import { validateFile, generateSecureFileName, FILE_CONFIGS, FileValidationResult } from '../utils/fileValidation';
+import { logError, logInfo } from '../utils/secureLogger';
 
 interface TicketType {
   type: string;
@@ -50,6 +52,7 @@ const CreateEvent = () => {
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [ticketErrors, setTicketErrors] = useState<Record<string, string>>({});
+  const [fileValidation, setFileValidation] = useState<FileValidationResult | null>(null);
 
   const tabs = [
     {
@@ -136,34 +139,85 @@ const CreateEvent = () => {
     }
   };
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (file: File): Promise<string | null> => {
     if (!file) return null;
     
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `event-images/${fileName}`;
+      // Validate file security
+      const validation = await validateFile(file, FILE_CONFIGS.image);
+      setFileValidation(validation);
+
+      if (!validation.isValid) {
+        setErrors({ ...errors, imageFile: validation.error || 'Archivo no válido' });
+        return null;
+      }
+
+      // Generate secure filename
+      const secureFileName = generateSecureFileName(file);
+      const filePath = `event-images/${secureFileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('events')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false // Don't overwrite existing files
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        if (uploadError.message.includes('already exists')) {
+          // Retry with new filename
+          const retryFileName = generateSecureFileName(file);
+          const retryPath = `event-images/${retryFileName}`;
+          const { error: retryError } = await supabase.storage
+            .from('events')
+            .upload(retryPath, file, { cacheControl: '3600', upsert: false });
+          
+          if (retryError) throw retryError;
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('events')
+            .getPublicUrl(retryPath);
+          return publicUrl;
+        }
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('events')
         .getPublicUrl(filePath);
 
+      // Clear any previous errors
+      const newErrors = { ...errors };
+      delete newErrors.imageFile;
+      setErrors(newErrors);
+
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      logError('Image upload failed', error, { fileName: file.name, fileSize: file.size }, user?.id);
+      setErrors({ ...errors, imageFile: 'Error al subir la imagen. Intente nuevamente.' });
       return null;
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file immediately on selection
+      const validation = await validateFile(file, FILE_CONFIGS.image);
+      setFileValidation(validation);
+
+      if (!validation.isValid) {
+        setErrors({ ...errors, imageFile: validation.error || 'Archivo no válido' });
+        // Clear the input
+        e.target.value = '';
+        return;
+      }
+
+      // Clear any previous errors
+      const newErrors = { ...errors };
+      delete newErrors.imageFile;
+      setErrors(newErrors);
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setEventData(prev => ({
@@ -228,7 +282,10 @@ const CreateEvent = () => {
 
       navigate(`/evento/${event.id}`);
     } catch (error) {
-      console.error('Error creating event:', error);
+      logError('Event creation failed', error, { 
+        eventName: eventData.name,
+        ticketCount: eventData.tickets.length 
+      }, user?.id);
       setErrors({
         submit: 'Error al crear el evento. Por favor, intente nuevamente.'
       });

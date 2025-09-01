@@ -5,6 +5,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Font utilities */
+@layer utilities {
+  .font-anton {
+    font-family: 'Anton', system-ui, sans-serif;
+  }
+  
+  .font-gasoek {
+    font-family: 'Gasoek One', system-ui, sans-serif;
+  }
+  
+  .font-sf-pro {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  }
+}
+
 :root {
   --gradient-green: linear-gradient(135deg, #56ae4a 0%, #68c95b 100%);
 }
