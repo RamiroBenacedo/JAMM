@@ -75,7 +75,7 @@ const Register = () => {
             full_name: name
           },
           // Configurar URL de redirección después de confirmar email
-          emailRedirectTo: getRedirectURL('/dashboard')
+          emailRedirectTo: getRedirectURL('/')
         }
       });
 

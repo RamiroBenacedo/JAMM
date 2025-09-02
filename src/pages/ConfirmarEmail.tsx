@@ -27,7 +27,7 @@ const ConfirmarEmail: React.FC = () => {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: getRedirectURL('/dashboard')
+          emailRedirectTo: getRedirectURL('/')
         }
       });
 

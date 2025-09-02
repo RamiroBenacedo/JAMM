@@ -125,7 +125,7 @@ const Login = () => {
       const { data, error: googleError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: getRedirectURL('/dashboard')
+          redirectTo: getRedirectURL('/')
         }
       });
 
