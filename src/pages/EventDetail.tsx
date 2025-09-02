@@ -65,7 +65,7 @@ export default function EventDetail() {
     email: '', confirmEmail: '', phone: '', country: ''
   });
   const [rrppInfo, setRrppInfo] = useState<{code: string, name: string} | null>(null);
-
+  const [mpDeviceId, setMpDeviceId] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -109,7 +109,24 @@ export default function EventDetail() {
       setLoading(false);
     })();
   }, [id, user, searchParams]);
+  useEffect(() => {
+    try {
+      const w = window as any;
+      const fromGlobal = w?.MP_DEVICE_SESSION_ID || w?.mpDeviceSessionId;
+      const fromLS = localStorage.getItem('MP_DEVICE_SESSION_ID') || localStorage.getItem('deviceId');
+      const fromSS = sessionStorage.getItem('MP_DEVICE_SESSION_ID');
 
+      const id = fromGlobal || fromLS || fromSS || null;
+      if (id) {
+        setMpDeviceId(String(id));
+        console.log("✅ MP_DEVICE_SESSION_ID capturado:", String(id).slice(0, 8) + "...");
+      } else {
+        console.warn("⚠️ No se encontró MP_DEVICE_SESSION_ID, revisá que esté cargado el script de seguridad de Mercado Pago.");
+      }
+    } catch (err) {
+      console.error("❌ Error al intentar capturar MP_DEVICE_SESSION_ID:", err);
+    }
+  }, []);
   const handleQuantityChange = (ticketId: string, delta: number) => {
     setTicketQuantities(prev => {
       const current = prev[ticketId] || 0;
@@ -235,7 +252,8 @@ export default function EventDetail() {
             marketplace_fee: Math.round(
               calculateTotal() * (event.marketplace_fee / 100)
             ),
-            ...(rrpp && { rrpp })
+            ...(rrpp && { rrpp }),
+            deviceId: mpDeviceId || undefined
           })
         }
       );
@@ -291,7 +309,8 @@ const handleGuestConfirm = async () => {
           marketplace_fee: Math.round(
             calculateTotal() * (event!.marketplace_fee / 100)
           ),
-          rrpp:            rrppInfo?.code || null
+          rrpp:            rrppInfo?.code || null,
+          deviceId: mpDeviceId || undefined
         })
       }
     )
