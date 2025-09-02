@@ -212,6 +212,9 @@ export default function EventDetail() {
               .toFixed(2)
             );
             const { error } = await supabase.rpc('purchase_tickets', {
+              p_payment_id:     null,
+              p_payment_status: null,
+              p_qr_code:        null,          // si se genera después, dejalo null
               p_ticket_type_id: t.id,
               p_user_id: user.id,
               p_quantity: qty,
