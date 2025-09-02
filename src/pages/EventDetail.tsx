@@ -65,7 +65,7 @@ export default function EventDetail() {
     email: '', confirmEmail: '', phone: '', country: ''
   });
   const [rrppInfo, setRrppInfo] = useState<{code: string, name: string} | null>(null);
-  const [mpDeviceId, setMpDeviceId] = useState<string | null>(null);
+  //const [mpDeviceId, setMpDeviceId] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -109,7 +109,7 @@ export default function EventDetail() {
       setLoading(false);
     })();
   }, [id, user, searchParams]);
-  useEffect(() => {
+  /*useEffect(() => {
     try {
       const w = window as any;
       const fromGlobal = w?.MP_DEVICE_SESSION_ID || w?.mpDeviceSessionId;
@@ -126,7 +126,7 @@ export default function EventDetail() {
     } catch (err) {
       console.error("❌ Error al intentar capturar MP_DEVICE_SESSION_ID:", err);
     }
-  }, []);
+  }, []);*/
   const handleQuantityChange = (ticketId: string, delta: number) => {
     setTicketQuantities(prev => {
       const current = prev[ticketId] || 0;
@@ -253,8 +253,8 @@ export default function EventDetail() {
             marketplace_fee: Math.round(
               calculateTotal() * (event.marketplace_fee / 100)
             ),
-            ...(rrpp && { rrpp }),
-            deviceId: mpDeviceId || undefined
+            ...(rrpp && { rrpp })
+            //deviceId: mpDeviceId || undefined
           })
         }
       );
@@ -313,8 +313,8 @@ const handleGuestConfirm = async () => {
           marketplace_fee: Math.round(
             calculateTotal() * (event!.marketplace_fee / 100)
           ),
-          rrpp:            rrppInfo?.code || null,
-          deviceId: mpDeviceId || undefined
+          rrpp:            rrppInfo?.code || null
+          //deviceId: mpDeviceId || undefined
         })
       }
     )
