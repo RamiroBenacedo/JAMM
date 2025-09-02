@@ -218,8 +218,7 @@ export default function EventDetail() {
               p_ticket_type_id: t.id,
               p_user_id: user.id,
               p_quantity: qty,
-              p_total_price: totalPrice,
-              p_rrpp: rrppInfo?.code || null
+              p_total_price: totalPrice
             });
             if (error) throw error;
           }
