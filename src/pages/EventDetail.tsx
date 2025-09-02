@@ -242,7 +242,8 @@ export default function EventDetail() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
+            'apikey': API_CONFIG.supabase.anonKey,
+            ...(token ? { Authorization: `Bearer ${token || API_CONFIG.supabase.anonKey}` } : {})
           },
           body: JSON.stringify({
             email: user?.email,
@@ -289,14 +290,17 @@ const handleGuestConfirm = async () => {
       setPurchaseError('No hay tipo de ticket seleccionado.')
       return
     }
-
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    const anon = API_CONFIG.supabase.anonKey;
     const resp = await fetch(
       API_CONFIG.endpoints.swiftTask,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': API_CONFIG.supabase.anonKey
+          'apikey': API_CONFIG.supabase.anonKey,
+          'Authorization': `Bearer ${accessToken || anon}`
         },
         body: JSON.stringify({
           email:           guestData.email,
