@@ -119,9 +119,8 @@ export default function EventDetail() {
       const id = fromGlobal || fromLS || fromSS || null;
       if (id) {
         setMpDeviceId(String(id));
-        console.log("✅ MP_DEVICE_SESSION_ID capturado:", String(id).slice(0, 8) + "...");
       } else {
-        console.warn("⚠️ No se encontró MP_DEVICE_SESSION_ID, revisá que esté cargado el script de seguridad de Mercado Pago.");
+        //console.warn("⚠️ No se encontró MP_DEVICE_SESSION_ID, revisá que esté cargado el script de seguridad de Mercado Pago.");
       }
     } catch (err) {
       console.error("❌ Error al intentar capturar MP_DEVICE_SESSION_ID:", err);
