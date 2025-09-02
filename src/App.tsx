@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import SecurityHeaders from './components/SecurityHeaders';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -25,7 +24,6 @@ import PoliticaDeDevolucion from './pages/PoliticaDeDevolucion';
 import DefensaDelConsumidor from './pages/DefensaDelConsumidor';
 function App() {
   return (
-    <SecurityHeaders>
       <AuthProvider>
         <BrowserRouter>
           <div className="min-h-screen bg-gray-900 flex flex-col">
@@ -57,7 +55,6 @@ function App() {
           </div>
         </BrowserRouter>
       </AuthProvider>
-    </SecurityHeaders>
   );
 }
 
