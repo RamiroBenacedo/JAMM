@@ -597,7 +597,7 @@ const EventDetails: React.FC = () => {
     setTicketStats(event.ticket_types.map(tt => {
       const sold = (ventas?.filter(v => v.ticket_type_id === tt.id).reduce((s, v) => s + (v.quantity||0), 0)) || 0;
       const sales = (ventas?.filter(v => v.ticket_type_id === tt.id).reduce((s, v) => s + (v.total_price||0), 0)) || 0;
-      const perc = tt.quantity ? Math.min((sold/tt.quantity)*100, 100) : 0;
+      const perc = (sold + (tt.quantity ?? 0)) > 0 ? (sold / (sold + (tt.quantity ?? 0))) * 100 : 0;
       return { id: tt.id, type: tt.type, ticketsSold: sold, totalSales: sales, quantity: tt.quantity, percentSold: perc };
     }));
     
@@ -1209,7 +1209,7 @@ const EventDetails: React.FC = () => {
                             </span>
                           </div>
                           <span className="text-white font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            {t.ticketsSold}/{t.quantity}
+                            {t.ticketsSold}/{t.ticketsSold + (t.quantity ?? 0)}
                           </span>
                         </div>
                         
