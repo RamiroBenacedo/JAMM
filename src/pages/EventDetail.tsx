@@ -122,6 +122,7 @@ export default function EventDetail() {
       } else {
         //console.warn("⚠️ No se encontró MP_DEVICE_SESSION_ID, revisá que esté cargado el script de seguridad de Mercado Pago.");
       }
+      console.log("Anon key:", API_CONFIG.supabase.anonKey?.slice(0,10) + "...");
     } catch (err) {
       console.error("❌ Error al intentar capturar MP_DEVICE_SESSION_ID:", err);
     }
