@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale';
 import { useAuth } from '../context/AuthContext';
 import { API_CONFIG } from '../config/api';
 import { logError, logWarn } from '../utils/secureLogger';
+import { picture } from 'framer-motion/client';
 interface Event {
   id: string;
   name: string;
@@ -223,12 +224,15 @@ export default function EventDetail() {
       const items = ticketTypes
         .filter(t => (ticketQuantities[t.id] || 0) > 0)
         .map(t => ({
+          id: t.id,
           title: t.description,
           quantity: ticketQuantities[t.id],
           unit_price: parseFloat(
             (t.price * (1 + (event.marketplace_fee / 100))).toFixed(2)
           ),
-          currency_id: 'ARS'
+          currency_id: 'ARS',
+          category_id: 'tickets',
+          picture_url: event.image_url
         }));
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
