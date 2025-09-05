@@ -279,12 +279,15 @@ const handleGuestConfirm = async () => {
     const items = ticketTypes
       .filter(t => ticketQuantities[t.id]! > 0)
       .map(t => ({
+        id: t.id,
         title:      t.description,
         quantity:   ticketQuantities[t.id]!,
         unit_price: parseFloat(
           (t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)
         ),
-        currency_id:'ARS'
+        currency_id:'ARS',
+        category_id: 'tickets',
+        picture_url: event!.image_url
       }))
 
     const ticketTypeId = ticketTypes.find(t => ticketQuantities[t.id]! > 0)?.id
