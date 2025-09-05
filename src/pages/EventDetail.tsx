@@ -225,7 +225,8 @@ export default function EventDetail() {
         .filter(t => (ticketQuantities[t.id] || 0) > 0)
         .map(t => ({
           id: t.id,
-          title: t.description,
+          title: t.type,
+          description: t.description,
           quantity: ticketQuantities[t.id],
           unit_price: parseFloat(
             (t.price * (1 + (event.marketplace_fee / 100))).toFixed(2)
@@ -280,7 +281,8 @@ const handleGuestConfirm = async () => {
       .filter(t => ticketQuantities[t.id]! > 0)
       .map(t => ({
         id: t.id,
-        title:      t.description,
+        title:      t.type,
+        description: t.description,
         quantity:   ticketQuantities[t.id]!,
         unit_price: parseFloat(
           (t.price * (1 + event!.marketplace_fee / 100)).toFixed(2)
