@@ -252,6 +252,8 @@ export default function EventDetail() {
             email: user?.email,
             userId: user?.id,
             event_id: event.id,
+            guest: false,
+            ticketTypeId: ticketTypes.find(t => (ticketQuantities[t.id] || 0) > 0)?.id,
             items,
             marketplace_fee: Math.round(
               calculateTotal() * (event.marketplace_fee / 100)
