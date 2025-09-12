@@ -247,7 +247,9 @@ const CreateEvent = () => {
       let imageUrl = eventData.imageFile 
         ? await handleImageUpload(eventData.imageFile)
         : null;
-
+      const salesEndDateIso = eventData.salesEndDate
+      ? new Date(eventData.salesEndDate).toISOString()
+      : null;
       const { data: event, error: eventError } = await supabase
         .from('events')
         .insert({
@@ -258,7 +260,7 @@ const CreateEvent = () => {
           time: eventData.time,
           location: eventData.location,
           max_tickets_per_user: eventData.maxTicketsPerUser,
-          sales_end_date: eventData.salesEndDate,
+          sales_end_date: salesEndDateIso,
           image_url: imageUrl
         })
         .select()
