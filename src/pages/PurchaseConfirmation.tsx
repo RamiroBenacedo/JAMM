@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
-
+import { supabase } from '../lib/supabase';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 // Datos hardcodeados
-const MOCK_EVENT_DATA = {
+/*const MOCK_EVENT_DATA = {
   eventName: "Noche de Jazz en Club Verde",
   date: "Sábado 15 de Marzo, 2025",
   venue: "Club Verde - Palermo"
-};
+};*/
 
-const userEmail = "ramiro@example.com";
+//const userEmail = "ramiro@example.com";
 
 // Variantes de animación
 const containerVariants = {
@@ -53,71 +55,87 @@ const PurchaseConfirmation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('loading');
   const [showSuccess, setShowSuccess] = useState(false);
-
+  const [buyerEmail, setBuyerEmail] = useState<string>('');
+  const [eventInfo, setEventInfo] = useState<{ name: string; date: string; location: string } | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [faviconSize, setFaviconSize] = useState<number>(96);
   // Función para validar el pago con Mercado Pago
-  const validatePayment = async (paymentId: string, preferenceId: string) => {
-    try {
-      // Simular llamada al webhook/API de validación
-      // En producción, esto haría una llamada real a tu backend
-      console.log('Validating payment:', { paymentId, preferenceId });
-
-      // Simular diferentes respuestas basadas en parámetros URL
-      const status = searchParams.get('status');
-      const collection_status = searchParams.get('collection_status');
-
-      // Simular delay de validación
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Lógica de validación basada en parámetros de Mercado Pago
-      if (status === 'approved' || collection_status === 'approved') {
-        return { success: true, status: 'approved' };
-      } else if (status === 'rejected' || collection_status === 'rejected') {
-        return { success: false, status: 'rejected', message: 'El pago fue rechazado' };
-      } else if (status === 'pending' || collection_status === 'pending') {
-        return { success: false, status: 'pending', message: 'El pago está pendiente' };
-      } else {
-        // Para testing: simular éxito por defecto si no hay parámetros específicos
-        return { success: true, status: 'approved' };
-      }
-    } catch (error) {
-      console.error('Error validating payment:', error);
-      return { success: false, status: 'error', message: 'Error al validar el pago' };
-    }
-  };
 
   useEffect(() => {
-    const processPayment = async () => {
-      // Obtener parámetros de la URL (enviados por Mercado Pago)
-      const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id');
-      const preferenceId = searchParams.get('preference_id');
-      const merchantOrderId = searchParams.get('merchant_order_id');
+    let isMounted = true;
 
-      console.log('Payment params:', { paymentId, preferenceId, merchantOrderId });
-
-      if (!paymentId) {
-        // Si no hay payment_id, asumir error
-        setPaymentStatus('error');
-        return;
-      }
-
+    const run = async () => {
       try {
-        const result = await validatePayment(paymentId, preferenceId || '');
+        setLoading(true);
+        setError(null);
 
-        if (result.success) {
-          setPaymentStatus('success');
-          setShowSuccess(true);
-        } else {
-          setPaymentStatus('failed');
+        // 1) event_id desde la URL
+        const eventId = searchParams.get('event_id');
+        if (!eventId) throw new Error('Falta event_id en la URL');
+
+        // 2) Cargar evento desde Supabase
+        const { data: ev, error: evErr } = await supabase
+          .from('events')
+          .select('id, name, date, location') // ajustá a tu schema
+          .eq('id', eventId)
+          .single();
+
+        if (evErr || !ev) throw new Error('No se pudo obtener la información del evento');
+
+        // 3) Email: sesión o external_reference (userId__email)
+        const { data: authData } = await supabase.auth.getUser();
+        let finalEmail = authData?.user?.email ?? '';
+
+        if (!finalEmail) {
+          const extRefRaw = searchParams.get('external_reference');
+          if (extRefRaw) {
+            const extRef = decodeURIComponent(extRefRaw);
+            const parts = extRef.split('__');
+            if (parts.length > 1) finalEmail = parts[1] || '';
+          }
         }
-      } catch (error) {
-        console.error('Payment processing error:', error);
-        setPaymentStatus('error');
+
+        if (!isMounted) return;
+
+        setEventInfo({ name: ev.name, date: ev.date, location: ev.location });
+        setBuyerEmail(finalEmail);
+        setLoading(false);
+      } catch (e: any) {
+        if (!isMounted) return;
+        setError(e?.message || 'Error cargando la confirmación');
+        setLoading(false);
       }
     };
 
-    processPayment();
-  }, [searchParams]);
+    run();
 
+    return () => { isMounted = false; };
+  }, [searchParams]);
+  useEffect(() => {
+  const statusParam = (searchParams.get('status') || searchParams.get('collection_status') || '').toLowerCase();
+
+  if (statusParam === 'approved') {
+    setPaymentStatus('success');
+    setShowSuccess(true);
+  } else if (statusParam === 'rejected') {
+    setPaymentStatus('failed');
+    setShowSuccess(false);
+  } else if (statusParam === 'pending') {
+    // Podés mostrar una pantalla específica si querés; acá lo trato como "fallo suave"
+    setPaymentStatus('failed');
+    setShowSuccess(false);
+  } else {
+    setPaymentStatus('error');
+    setShowSuccess(false);
+  }
+}, [searchParams]);
+  useEffect(() => {
+    const update = () => setFaviconSize(window.innerWidth >= 1024 ? 96 : 140);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   useEffect(() => {
     // Prevenir overscroll (bounce) en iOS y otros navegadores
     const preventOverscroll = (e: TouchEvent) => {
@@ -201,14 +219,7 @@ const PurchaseConfirmation: React.FC = () => {
                 variants={itemVariants}
                 className="mx-auto mb-2 flex items-center justify-center"
               >
-                <img
-                  src="/favicon.png"
-                  alt="JAMM Logo"
-                  style={{
-                    height: window.innerWidth >= 1024 ? '96px' : '140px',
-                    width: 'auto'
-                  }}
-                />
+                <img src="/favicon.png" alt="JAMM Logo" style={{ height: `${faviconSize}px`, width: 'auto' }} />
               </motion.div>
 
               {/* Título principal en dos líneas */}
@@ -221,16 +232,24 @@ const PurchaseConfirmation: React.FC = () => {
               {/* Detalles del evento */}
               <motion.div variants={itemVariants}>
                 <div className="text-base leading-snug max-w-xs mx-auto mt-2">
-                  <p className="font-semibold">{MOCK_EVENT_DATA.eventName}</p>
-                  <p>{MOCK_EVENT_DATA.date}</p>
-                  <p>{MOCK_EVENT_DATA.venue}</p>
+                  {loading ? (
+                    <div className="text-gray-300">Cargando evento…</div>
+                  ) : error ? (
+                    <div className="text-red-300">{error}</div>
+                  ) : eventInfo ? (
+                    <>
+                      <p className="font-semibold">{eventInfo.name}</p>
+                      <p>{format(parseISO(eventInfo.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}</p>
+                      <p>{eventInfo.location}</p>
+                    </>
+                  ) : null}
                 </div>
               </motion.div>
 
               {/* Email */}
               <motion.div variants={itemVariants}>
                 <p className="text-sm opacity-80 mt-2">
-                  Te enviamos las entradas a {userEmail}
+                  Te enviamos las entradas a {buyerEmail || 'tu correo'}
                 </p>
               </motion.div>
 
