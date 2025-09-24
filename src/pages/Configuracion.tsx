@@ -250,9 +250,24 @@ const Configuracion = () => {
       setPasswordLoading(false);
     }
   };
-
+  function generateState(): string {
+    const letters = Math.random().toString(36).substring(2, 8); // letras/números random
+    const digits = Math.floor(Math.random() * 90 + 10); // siempre 2 dígitos (10–99)
+    return `${letters}${digits}`;
+  }
   const handleMercadoPagoConnect = () => {
-    const mercadoPagoAuthUrl = "https://auth.mercadopago.com.ar/authorization?client_id=4561360244072920&response_type=code&platform_id=mp&state=id=vendedoramigo&redirect_uri=https://jammcmmnty.com/oauth";
+    const state = generateState();
+
+    const params = new URLSearchParams({
+      client_id: '4561360244072920',
+      response_type: 'code',
+      platform_id: 'mp',
+      state,
+      redirect_uri: 'https://jammcmmnty.com/oauth'
+    });
+
+    const mercadoPagoAuthUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`;
+
     window.open(mercadoPagoAuthUrl, '_blank', 'noopener,noreferrer');
   };
 
