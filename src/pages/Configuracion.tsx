@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Mail, Lock, CheckCircle, AlertCircle, User, Eye, EyeOff } from 'lucide-react';
+import { Settings, Mail, Lock, CheckCircle, AlertCircle, User, Eye, EyeOff, CreditCard, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 const Configuracion = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [rol, setRol] = useState<string | null>(null);
   const [userData, setUserData] = useState<{
     full_name: string | null;
     email: string | null;
@@ -49,8 +50,18 @@ const Configuracion = () => {
 
       try {
         setLoading(true);
+
+        // Obtener rol del usuario
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('rol')
+          .eq('user_id', user.id)
+          .single();
+
+        setRol(profileData?.rol || null);
+
         const { data: { user: userData }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError) throw userError;
         
         // Detectar si el usuario es de OAuth (Google, Facebook, etc.)
@@ -240,6 +251,11 @@ const Configuracion = () => {
     }
   };
 
+  const handleMercadoPagoConnect = () => {
+    const mercadoPagoAuthUrl = "https://auth.mercadopago.com.ar/authorization?client_id=4561360244072920&response_type=code&platform_id=mp&state=id=vendedoramigo&redirect_uri=https://jammcmmnty.com/oauth";
+    window.open(mercadoPagoAuthUrl, '_blank', 'noopener,noreferrer');
+  };
+
   if (loading) {
     return (
       <div className="bg-[#2a2a2a] min-h-[calc(100vh-8rem)]">
@@ -270,7 +286,75 @@ const Configuracion = () => {
           <div className="border-t border-gray-700">
             <div className="px-4 py-5 sm:p-6">
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                
+
+                {/* Sección de Mercado Pago - Solo para productoras */}
+                {rol === 'productora' && (
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="h-5 w-5 text-[#FF5722]" />
+                      <h3 className="text-base lg:text-lg font-medium text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Integración con Mercado Pago
+                      </h3>
+                    </div>
+
+                    <div className="bg-[#111111] border border-gray-700 rounded-lg p-6">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-white mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            Estado de la Conexión
+                          </h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-sm text-green-400" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                Activa
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-400" style={{ fontFamily: 'Inter, sans-serif' }}>
+                              <p>Token válido hasta: <span className="text-white">15/03/2025</span></p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <button
+                            onClick={handleMercadoPagoConnect}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#00B5D8] hover:bg-[#0095B3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00B5D8] transition-colors"
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Conectar a Mercado Pago
+                            <ExternalLink className="h-3 w-3 ml-2" />
+                          </button>
+
+                          <p className="text-xs text-gray-500 text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            Se abrirá en una nueva ventana
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-gray-700">
+                        <h5 className="text-xs font-medium text-gray-300 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          Panel de Control
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          <div className="bg-[#2a2a2a] p-3 rounded">
+                            <div className="text-gray-400 mb-1">Estado</div>
+                            <div className="text-green-400 font-medium">Activa</div>
+                          </div>
+                          <div className="bg-[#2a2a2a] p-3 rounded">
+                            <div className="text-gray-400 mb-1">Vencimiento</div>
+                            <div className="text-white font-medium">15/03/2025</div>
+                          </div>
+                          <div className="bg-[#2a2a2a] p-3 rounded">
+                            <div className="text-gray-400 mb-1">Último Uso</div>
+                            <div className="text-white font-medium">12/01/2025</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Formulario para cambiar email */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-2">

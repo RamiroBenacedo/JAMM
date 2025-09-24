@@ -22,6 +22,7 @@ import TerminosYCondiciones from './pages/TerminosYCondiciones';
 import PoliticaDePrivacidad from './pages/PoliticaDePrivacidad';
 import PoliticaDeDevolucion from './pages/PoliticaDeDevolucion';
 import DefensaDelConsumidor from './pages/DefensaDelConsumidor';
+import PurchaseConfirmation from './pages/PurchaseConfirmation';
 function App() {
   return (
       <AuthProvider>
@@ -44,6 +45,7 @@ function App() {
               <Route path="/rrpps" element={<Rrpp />} />
               <Route path="/mis-eventos" element={<MisEventos />} />
               <Route path="/success" element={<Success />} />
+              <Route path="/confirmacion-compra" element={<PurchaseConfirmation />} />
               <Route path="/configuracion" element={<Configuracion />} />
               <Route path="/terminos-y-condiciones" element={<TerminosYCondiciones />} />
               <Route path="/politica-de-privacidad" element={<PoliticaDePrivacidad />} />
