@@ -239,7 +239,12 @@ const PurchaseConfirmation: React.FC = () => {
                   ) : eventInfo ? (
                     <>
                       <p className="font-semibold">{eventInfo.name}</p>
-                      <p>{format(parseISO(eventInfo.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}</p>
+                      <p>
+                        {(() => {
+                          const formatted = format(parseISO(eventInfo.date), "EEEE d 'de' MMMM, yyyy", { locale: es });
+                          return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                        })()}
+                      </p>
                       <p>{eventInfo.location}</p>
                     </>
                   ) : null}
