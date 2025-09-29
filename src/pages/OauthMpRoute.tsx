@@ -2,7 +2,7 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-
+import { supabase } from '../lib/supabase';
 const EDGE_URL = 'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/oauth-mp'
 const REDIRECT_BASE = '/mercadopago/autorizacion'
 
@@ -37,23 +37,20 @@ export default function OauthMpRoute() {
       try {
         setMsg('Intercambiando credenciales…')
 
-        const res = await fetch(EDGE_URL, {
+        const { data, error } = await supabase.functions.invoke('oauth-mp', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, state }),
-        })
+          body: { code, state },
+        });
 
-        const data = await res.json().catch(() => ({} as any))
-
-        if (!res.ok || !data?.ok) {
-          const ident = data?.identificador || ''
-          const reason = data?.error || `http_${res.status}`
-          return navigate(toErrPath(ident, reason), { replace: true })
+        if (error || !data?.ok) {
+          const ident = data?.identificador || '';
+          const reason = data?.error || `invoke_error`;
+          return navigate(`/mercadopago/autorizacion/3/${encodeURIComponent(ident)}/${encodeURIComponent(reason)}`, { replace: true });
         }
 
-        const ident = data.identificador || ''
-        const estado: 1 | 2 = data.refreshed ? 2 : 1
-        return navigate(toOkPath(estado, ident), { replace: true })
+        const ident = data.identificador || '';
+        const estado: 1 | 2 = data.refreshed ? 2 : 1;
+        return navigate(`/configuracion}`, { replace: true });
       } catch {
         setMsg('No pudimos completar la conexión.')
         setDetail('Error inesperado al contactar el servidor.')
