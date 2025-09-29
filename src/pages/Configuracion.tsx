@@ -291,7 +291,7 @@ const Configuracion = () => {
       response_type: 'code',
       platform_id: 'mp',
       state,
-      redirect_uri: `${window.location.origin}/oauth`
+      redirect_uri: `https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/oauth-mp`
     })
 
     const mercadoPagoAuthUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`
