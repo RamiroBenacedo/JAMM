@@ -43,6 +43,8 @@ const Configuracion = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [mpConnected, setMpConnected] = useState<boolean>(false);
+  const [mpExpiry, setMpExpiry] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -83,6 +85,19 @@ const Configuracion = () => {
           ...prev,
           newEmail: userData?.email || ''
         }));
+        const { data: mpRow, error: mpErr } = await supabase
+          .from('mp_vendedores')
+          .select('created_at, expires_in')
+          .eq('creator_id', user.id)
+          .maybeSingle();
+
+        if (!mpErr && mpRow) {
+          setMpConnected(true);
+          setMpExpiry(calcExpiry(mpRow.created_at, mpRow.expires_in));
+        } else {
+          setMpConnected(false);
+          setMpExpiry(null);
+        }
       } catch (err) {
         console.error('Error fetching user data:', err);
       } finally {
@@ -250,26 +265,46 @@ const Configuracion = () => {
       setPasswordLoading(false);
     }
   };
-  function generateState(): string {
-    const letters = Math.random().toString(36).substring(2, 8); // letras/números random
-    const digits = Math.floor(Math.random() * 90 + 10); // siempre 2 dígitos (10–99)
-    return `${letters}${digits}`;
+  function generateStateString(params: Record<string,string>) {
+  const usp = new URLSearchParams(params)
+  return usp.toString()
+}
+
+  function generateShortId(): string {
+    const letters = Math.random().toString(36).substring(2, 8) // 6 chars
+    const digits = Math.floor(Math.random() * 90 + 10)         // 2 dígitos 10-99
+    return `${letters}${digits}`
   }
+
   const handleMercadoPagoConnect = () => {
-    const state = generateState();
+    // cliente: podés usar user.id o un identificador estable de tu negocio
+    const cliente = (user?.id as string) || generateShortId()
+    const creatorId = (user?.id as string) || ''
+
+    const state = generateStateString({ id: cliente, creator_id: creatorId })
+
+    // (opcional) anti-CSRF: guardar state para validarlo luego
+    sessionStorage.setItem('mp_state', state)
 
     const params = new URLSearchParams({
       client_id: '4561360244072920',
       response_type: 'code',
       platform_id: 'mp',
       state,
-      redirect_uri: 'https://jammcmmnty.com/oauth'
-    });
+      redirect_uri: `${window.location.origin}/oauth`
+    })
 
-    const mercadoPagoAuthUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`;
+    const mercadoPagoAuthUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`
 
-    window.open(mercadoPagoAuthUrl, '_blank', 'noopener,noreferrer');
-  };
+    window.location.href = mercadoPagoAuthUrl
+  }
+
+  function calcExpiry(created_at: string, expires_in?: number | null): Date | null {
+    if (!expires_in) return null
+    const base = new Date(created_at)
+    return new Date(base.getTime() + expires_in * 1000)
+  }
+
 
   if (loading) {
     return (
@@ -320,15 +355,21 @@ const Configuracion = () => {
                           </h4>
                           <div className="space-y-3">
                             <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="text-sm text-green-400" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                Activa
+                              <div className={`w-2 h-2 rounded-full ${mpConnected ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                              <span className={`text-sm ${mpConnected ? 'text-green-400' : 'text-gray-400'}`}>
+                                {mpConnected ? 'Activa' : 'No conectada'}
                               </span>
                             </div>
-                            <div className="text-xs text-gray-400" style={{ fontFamily: 'Inter, sans-serif' }}>
-                              <p>Token válido hasta: <span className="text-white">15/03/2025</span></p>
+                            <div className="text-xs text-gray-400">
+                              <p>
+                                Token válido hasta:{' '}
+                                <span className="text-white">
+                                  {mpExpiry ? mpExpiry.toLocaleString() : '—'}
+                                </span>
+                              </p>
                             </div>
                           </div>
+
                         </div>
 
                         <div className="flex flex-col gap-3">

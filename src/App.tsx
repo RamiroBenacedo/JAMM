@@ -23,6 +23,7 @@ import PoliticaDePrivacidad from './pages/PoliticaDePrivacidad';
 import PoliticaDeDevolucion from './pages/PoliticaDeDevolucion';
 import DefensaDelConsumidor from './pages/DefensaDelConsumidor';
 import PurchaseConfirmation from './pages/PurchaseConfirmation';
+import OauthMpRoute from './pages/OauthMpRoute';
 function App() {
   return (
       <AuthProvider>
@@ -51,6 +52,7 @@ function App() {
               <Route path="/politica-de-privacidad" element={<PoliticaDePrivacidad />} />
               <Route path="/politica-de-devolucion" element={<PoliticaDeDevolucion />} />
               <Route path="/defensa-del-consumidor" element={<DefensaDelConsumidor />} />
+              <Route path="/oauth" element={<OauthMpRoute  />} />
             </Routes>
             </main>
             <Footer />
