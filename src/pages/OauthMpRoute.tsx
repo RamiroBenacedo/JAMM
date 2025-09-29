@@ -1,26 +1,34 @@
 // src/routes/OauthMpRoute.tsx
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase';
-const EDGE_URL = 'https://qhyclhodgrlqmxdzcfgz.supabase.co/functions/v1/oauth-mp'
-const REDIRECT_BASE = '/mercadopago/autorizacion'
+import { supabase } from '../lib/supabase'
+
+const REDIRECT_BASE = '/configuracion'
 
 function toOkPath(estado: 1 | 2, identificador: string) {
-  return `${REDIRECT_BASE}/${estado}/${encodeURIComponent(identificador || '')}`
+  return `${REDIRECT_BASE}`//`/${estado}/${encodeURIComponent(identificador || '')}`
 }
 
 function toErrPath(identificador: string, reason: string) {
   return `${REDIRECT_BASE}/3/${encodeURIComponent(identificador || '')}/${encodeURIComponent(reason || 'exchange_failed')}`
 }
 
+type OAuthMpResponse =
+  | { ok: true; identificador?: string; refreshed?: boolean }
+  | { ok: false; identificador?: string; error?: string }
+
 export default function OauthMpRoute() {
   const [search] = useSearchParams()
   const navigate = useNavigate()
   const [msg, setMsg] = useState('Conectando con Mercado Pago…')
   const [detail, setDetail] = useState<string | null>(null)
+  const ran = useRef(false) // evita dobles ejecuciones en modo Strict
 
   useEffect(() => {
+    if (ran.current) return
+    ran.current = true
+
     const run = async () => {
       const code = search.get('code') || ''
       const state = search.get('state') || ''
@@ -37,29 +45,41 @@ export default function OauthMpRoute() {
       try {
         setMsg('Intercambiando credenciales…')
 
-        const { data, error } = await supabase.functions.invoke('oauth-mp', {
+        const { data, error } = await supabase.functions.invoke<OAuthMpResponse>('oauth-mp', {
           method: 'POST',
           body: { code, state },
-        });
+        })
 
-        if (error || !data?.ok) {
-          const ident = data?.identificador || '';
-          const reason = data?.error || `invoke_error`;
-          return navigate(`/mercadopago/autorizacion/3/${encodeURIComponent(ident)}/${encodeURIComponent(reason)}`, { replace: true });
+        if (error) {
+          console.error('invoke error', error)
+          return navigate(toErrPath('', 'invoke_error'), { replace: true })
         }
 
-        const ident = data.identificador || '';
-        const estado: 1 | 2 = data.refreshed ? 2 : 1;
-        return navigate(`/configuracion}`, { replace: true });
-      } catch {
+        if (!data || data.ok !== true) {
+          const ident = (data && 'identificador' in data && data.identificador) ? data.identificador! : ''
+          const reason = (data && 'error' in data && data.error) ? data.error! : 'exchange_failed'
+          return navigate(toErrPath(ident, reason), { replace: true })
+        }
+
+        // ok === true
+        const ident = data.identificador || ''
+        const estado: 1 | 2 = data.refreshed ? 2 : 1
+
+        // Redirigí a donde prefieras:
+        // a) usar la ruta de autorización con estado/id:
+        return navigate(toOkPath(estado, ident), { replace: true })
+
+        // b) o ir directo a Configuración (si no querés mostrar la página intermedia):
+        // return navigate('/configuracion', { replace: true })
+      } catch (e) {
+        console.error('unexpected', e)
         setMsg('No pudimos completar la conexión.')
         setDetail('Error inesperado al contactar el servidor.')
         return navigate(toErrPath('', 'unexpected_error'), { replace: true })
       }
     }
 
-    run()
-    // solo al montar (no dependas de navigate para evitar loops)
+    void run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
