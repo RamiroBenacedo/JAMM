@@ -46,11 +46,22 @@ const Configuracion = () => {
   const [mpConnected, setMpConnected] = useState<boolean>(false);
   const [mpExpiry, setMpExpiry] = useState<Date | null>(null);
   const [mpStatus, setMpStatus] = useState<MpStatus>('none');
+  const [mpCreatedAt, setMpCreatedAt] = useState<string | null>(null);
 
+  function formatDateToBuenosAires(dateString: string | null) {
+    if (!dateString) return '—'
+    return new Date(dateString).toLocaleString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
-
       try {
         setLoading(true);
 
@@ -105,10 +116,12 @@ const Configuracion = () => {
           setMpExpiry(exp ?? null);
           setMpConnected(isActive);
           setMpStatus(isActive ? 'active' : 'expired');
+          setMpCreatedAt(mpRow.created_at);
         } else {
           setMpExpiry(null);
           setMpConnected(false);
           setMpStatus('none');
+          setMpCreatedAt(null);
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -426,21 +439,14 @@ const Configuracion = () => {
                               <div className="bg-[#2a2a2a] p-3 rounded">
                               <div className="text-gray-400 mb-1">Vencimiento</div>
                               <div className="text-white font-medium">
-                                {mpExpiry ? mpExpiry.toLocaleString('es-AR', {
-                                  timeZone: 'America/Argentina/Buenos_Aires',
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                }) : '—'}
+                                {mpExpiry ? formatDateToBuenosAires(mpExpiry.toISOString()) : '—'}
                               </div>
                             </div>
                           </div>
                           <div className="bg-[#2a2a2a] p-3 rounded">
                             <div className="text-gray-400 mb-1">Fecha de Conexión</div>
                             <div className="text-white font-medium">
-                              {mpConnected && mpExpiry ? new Date(mpExpiry.getTime() - (mpExpiry.getTimezoneOffset() * 60000)).toLocaleDateString() : '—'}
+                              {mpCreatedAt ? formatDateToBuenosAires(mpCreatedAt) : '—'}
                             </div>
                           </div>
                         </div>
