@@ -376,7 +376,14 @@ const Configuracion = () => {
                               <p>
                                 Token válido hasta:{' '}
                                 <span className="text-white">
-                                  {mpExpiry ? mpExpiry.toLocaleString() : '—'}
+                                  {mpExpiry ? mpExpiry.toLocaleString('es-AR', {
+                                    timeZone: 'America/Argentina/Buenos_Aires',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  }) : '—'}
                                 </span>
                               </p>
                             </div>
@@ -419,7 +426,14 @@ const Configuracion = () => {
                               <div className="bg-[#2a2a2a] p-3 rounded">
                               <div className="text-gray-400 mb-1">Vencimiento</div>
                               <div className="text-white font-medium">
-                                {mpExpiry ? mpExpiry.toLocaleString() : '—'}
+                                {mpExpiry ? mpExpiry.toLocaleString('es-AR', {
+                                  timeZone: 'America/Argentina/Buenos_Aires',
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : '—'}
                               </div>
                             </div>
                           </div>
