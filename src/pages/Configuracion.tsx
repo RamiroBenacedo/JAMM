@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Mail, Lock, CheckCircle, AlertCircle, User, Eye, EyeOff, CreditCard, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-
+type MpStatus = 'none' | 'active' | 'expired';
 const Configuracion = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -45,6 +45,7 @@ const Configuracion = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mpConnected, setMpConnected] = useState<boolean>(false);
   const [mpExpiry, setMpExpiry] = useState<Date | null>(null);
+  const [mpStatus, setMpStatus] = useState<MpStatus>('none');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -91,12 +92,23 @@ const Configuracion = () => {
           .eq('creator_id', user.id)
           .maybeSingle();
 
+        function calcExpiry(created_at: string, expires_in?: number | null): Date | null {
+          if (!expires_in) return null;
+          const base = new Date(created_at);
+          return new Date(base.getTime() + expires_in * 1000);
+        }
+
         if (!mpErr && mpRow) {
-          setMpConnected(true);
-          setMpExpiry(calcExpiry(mpRow.created_at, mpRow.expires_in));
+          const exp = calcExpiry(mpRow.created_at, mpRow.expires_in);
+          const isActive = !!exp && exp.getTime() > Date.now();
+
+          setMpExpiry(exp ?? null);
+          setMpConnected(isActive);
+          setMpStatus(isActive ? 'active' : 'expired');
         } else {
-          setMpConnected(false);
           setMpExpiry(null);
+          setMpConnected(false);
+          setMpStatus('none');
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -395,15 +407,27 @@ const Configuracion = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                           <div className="bg-[#2a2a2a] p-3 rounded">
                             <div className="text-gray-400 mb-1">Estado</div>
-                            <div className="text-green-400 font-medium">Activa</div>
+                            <div className={
+                              mpStatus === 'active' ? 'text-green-400 font-medium'
+                              : mpStatus === 'expired' ? 'text-yellow-400 font-medium'
+                              : 'text-gray-400 font-medium'
+                            }>
+                              {mpStatus === 'active' ? 'Activa' : mpStatus === 'expired' ? 'Desactivada' : 'Aguardando conexión'}
+                            </div>
                           </div>
                           <div className="bg-[#2a2a2a] p-3 rounded">
-                            <div className="text-gray-400 mb-1">Vencimiento</div>
-                            <div className="text-white font-medium">15/03/2025</div>
+                              <div className="bg-[#2a2a2a] p-3 rounded">
+                              <div className="text-gray-400 mb-1">Vencimiento</div>
+                              <div className="text-white font-medium">
+                                {mpExpiry ? mpExpiry.toLocaleString() : '—'}
+                              </div>
+                            </div>
                           </div>
                           <div className="bg-[#2a2a2a] p-3 rounded">
-                            <div className="text-gray-400 mb-1">Último Uso</div>
-                            <div className="text-white font-medium">12/01/2025</div>
+                            <div className="text-gray-400 mb-1">Fecha de Conexión</div>
+                            <div className="text-white font-medium">
+                              {mpConnected && mpExpiry ? new Date(mpExpiry.getTime() - (mpExpiry.getTimezoneOffset() * 60000)).toLocaleDateString() : '—'}
+                            </div>
                           </div>
                         </div>
                       </div>
