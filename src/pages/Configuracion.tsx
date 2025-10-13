@@ -294,7 +294,29 @@ const Configuracion = () => {
   const usp = new URLSearchParams(params)
   return usp.toString()
 }
-
+  function slugifyName(name?: string | null) {
+    const base = (name || 'user').toLowerCase().trim();
+    return base
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita acentos
+      .replace(/[^a-z0-9]+/g, '-')                       // no-alfanum -> guión
+      .replace(/^-+|-+$/g, '')                           // sin guiones extremos
+      .slice(0, 24);                                     // límite opcional
+  }
+  // ID alfanumérico (A–Z, a–z, 0–9) de largo fijo
+  function randomAlphaNum(len = 4) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let out = '';
+    const arr = new Uint8Array(len);
+    (crypto.getRandomValues || window.crypto.getRandomValues).call(crypto, arr);
+    for (let i = 0; i < len; i++) out += alphabet[arr[i] % alphabet.length];
+    return out;
+  }
+  // Construye el state pedido: "<name>-<XXXX>"
+  function buildState(displayName?: string | null) {
+    const namePart = slugifyName(displayName);
+    const tag = randomAlphaNum(4);
+    return `${namePart}-${tag}`;
+  }
   function generateShortId(): string {
     const letters = Math.random().toString(36).substring(2, 8) // 6 chars
     const digits = Math.floor(Math.random() * 90 + 10)         // 2 dígitos 10-99
@@ -302,27 +324,28 @@ const Configuracion = () => {
   }
 
   const handleMercadoPagoConnect = () => {
-    // cliente: podés usar user.id o un identificador estable de tu negocio
-    const cliente = (user?.id as string) || generateShortId()
-    const creatorId = (user?.id as string) || ''
+    const displayName =
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      (user as any)?.email ||
+      'user';
 
-    const state = generateStateString({ id: cliente, creator_id: creatorId })
+    const state = buildState(displayName);
 
-    // (opcional) anti-CSRF: guardar state para validarlo luego
-    sessionStorage.setItem('mp_state', state)
+    // guardar para validar anti-CSRF al volver
+    //sessionStorage.setItem('mp_state', state);
 
     const params = new URLSearchParams({
       client_id: '4561360244072920',
       response_type: 'code',
       platform_id: 'mp',
       state,
-      redirect_uri: `${window.location.origin}/oauth`
-    })
+      redirect_uri: `${window.location.origin}/oauth`,
+    });
 
-    const mercadoPagoAuthUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`
-
-    window.location.href = mercadoPagoAuthUrl
-  }
+    window.location.href =
+      `https://auth.mercadopago.com.ar/authorization?${params.toString()}`;
+  };
 
   function calcExpiry(created_at: string, expires_in?: number | null): Date | null {
     if (!expires_in) return null

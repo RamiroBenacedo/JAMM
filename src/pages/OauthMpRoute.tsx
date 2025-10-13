@@ -37,10 +37,10 @@ export default function OauthMpRoute() {
       if (!state) return navigate(toErrPath('', 'missing_state'), { replace: true })
 
       // (Opcional) Anti-CSRF: comparar con lo guardado al iniciar el flujo
-      const expected = sessionStorage.getItem('mp_state')
-      if (expected && expected !== state) {
+      //const expected = sessionStorage.getItem('mp_state')
+      /*if (expected && expected !== state) {
         return navigate(toErrPath('', 'invalid_state'), { replace: true })
-      }
+      }*/
 
       try {
         setMsg('Intercambiando credenciales…')
